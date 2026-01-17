@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  orgId        String
+  createdAt    DateTime @default(now())
+  organization Organization @relation(fields: [orgId], references: [id])
+  entries      EmotionalEntry[]
+  alerts       Alert[]
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  ADMIN
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  settings  Json?
+  users     User[]
+  metrics   TeamMetrics[]
+  alerts    Alert[]
+}
+
+model EmotionalEntry {
+  id          String   @id @default(uuid())
+  userId      String
+  moodScore   Int
+  energyScore Int
+  stressScore Int
+  note        String?
+  timestamp   DateTime @default(now())
+  user        User @relation(fields: [userId], references: [id])
+}
+
+model TeamMetrics {
+  id               String   @id @default(uuid())
+  orgId            String
+  avgMood          Float
+  burnoutIndex     Float
+  engagementIndex  Float
+  period           String
+  organization     Organization @relation(fields: [orgId], references: [id])
+}
+
+model Alert {
+  id        String     @id @default(uuid())
+  orgId     String
+  userId    String?
+  type      AlertType
+  severity  Severity
+  message   String
+  resolved  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  organization Organization @relation(fields: [orgId], references: [id])
+  user      User?      @relation(fields: [userId], references: [id])
+}
+
+enum AlertType {
+  BURNOUT
+  DISENGAGEMENT
+  ANOMALY
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
