@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { execFile } from 'child_process';
-import { promisify } from 'util';
-
-const execFileAsync = promisify(execFile);
+import { spawn } from 'child_process';
 
 /**
  * RecommendationService uses a locally hosted transformer model.
- * It expects an executable script (e.g., a Python inference script) at `process.env.LOCAL_MODEL_PATH`.
- * The script should accept a JSON string via stdin and output a JSON array of recommendation strings.
+ * It expects a Python script at `process.env.LOCAL_MODEL_PATH`.
+ * The script should accept JSON via stdin and output a JSON array of recommendation strings.
  */
 @Injectable()
 export class RecommendationService {
@@ -25,29 +22,63 @@ export class RecommendationService {
      * @param orgId Organization identifier
      * @param context Additional context (e.g., recent team metrics)
      */
-    async getRecommendations(orgId: string, context: any): Promise<string[]> {
+    async getRecommendations(orgId: string, context: Record<string, unknown>): Promise<string[]> {
         if (!this.modelPath) {
             // Fallback placeholder recommendations
             return [
                 'Encourage a short walk break after prolonged screen time.',
                 'Schedule a team coffee chat to boost engagement.',
-                'Offer a mindfulness micro‑session during peak stress periods.',
+                'Offer a mindfulness micro-session during peak stress periods.',
             ];
         }
 
-        try {
-            const input = JSON.stringify({ orgId, context });
-            const { stdout } = await execFileAsync('python', [this.modelPath], { input });
-            const result = JSON.parse(stdout);
-            if (Array.isArray(result)) return result;
-            return [];
-        } catch (err) {
-            console.error('Error invoking local model:', err);
-            // Return fallback on error
-            return [
-                'Consider reviewing workload distribution.',
-                'Promote flexible working hours during high‑stress periods.',
-            ];
-        }
+        return new Promise((resolve) => {
+            try {
+                const input = JSON.stringify({ orgId, context });
+                const python = spawn('python', [this.modelPath]);
+
+                let output = '';
+                let errorOutput = '';
+
+                python.stdout.on('data', (data) => {
+                    output += data.toString();
+                });
+
+                python.stderr.on('data', (data) => {
+                    errorOutput += data.toString();
+                });
+
+                python.on('close', (code) => {
+                    if (code === 0 && output) {
+                        try {
+                            const result = JSON.parse(output.trim());
+                            if (Array.isArray(result)) {
+                                resolve(result);
+                                return;
+                            }
+                        } catch {
+                            console.error('Failed to parse model output:', output);
+                        }
+                    }
+                    if (errorOutput) {
+                        console.error('Model error:', errorOutput);
+                    }
+                    // Return fallback on error
+                    resolve([
+                        'Consider reviewing workload distribution.',
+                        'Promote flexible working hours during high-stress periods.',
+                    ]);
+                });
+
+                python.stdin.write(input);
+                python.stdin.end();
+            } catch (err) {
+                console.error('Error invoking local model:', err);
+                resolve([
+                    'Consider reviewing workload distribution.',
+                    'Promote flexible working hours during high-stress periods.',
+                ]);
+            }
+        });
     }
 }

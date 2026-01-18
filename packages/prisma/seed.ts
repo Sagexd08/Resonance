@@ -1,3 +1,4 @@
+// @ts-ignore - Prisma client is generated at runtime
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
 

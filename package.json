@@ -13,8 +13,12 @@
     "format": "pnpm -r format"
   },
   "devDependencies": {
-    "typescript": "^5.5.2",
     "eslint": "^9.5.0",
-    "prettier": "^3.3.2"
+    "prettier": "^3.3.2",
+    "shadcn": "^3.7.0",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "ogl": "^1.0.11"
   }
 }

@@ -13,29 +13,19 @@
                 "packages/shared/src/*"
             ],
             "@prisma/*": [
-                "packages/prisma/src/*"
+                "packages/prisma/*"
             ]
         },
-        "outDir": "dist",
         "declaration": true,
         "sourceMap": true
     },
     "include": [
-        "apps/**/*",
-        "packages/**/*"
+        "apps",
+        "packages"
     ],
-    "references": [
-        {
-            "path": "apps/web"
-        },
-        {
-            "path": "apps/api"
-        },
-        {
-            "path": "packages/shared"
-        },
-        {
-            "path": "packages/prisma"
-        }
+    "exclude": [
+        "node_modules",
+        "dist",
+        ".next"
     ]
 }

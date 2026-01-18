@@ -1,0 +1,92 @@
+// Prisma schema for Resonance backend
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  EMPLOYEE
+  MANAGER
+}
+
+enum BurnoutSeverity {
+  LOW
+  MED
+  HIGH
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(EMPLOYEE)
+  teamId       String?  @map("team_id")
+  team         Team?    @relation(fields: [teamId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dailyMetrics DailyMetric[]
+  refreshTokens RefreshToken[]
+
+  @@index([email])
+  @@index([teamId])
+  @@map("users")
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String
+  companyName String   @map("company_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  burnoutAlerts BurnoutAlert[]
+
+  @@map("teams")
+}
+
+model DailyMetric {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         DateTime @default(now())
+  flowScore    Float    @map("flow_score")
+  fatigueScore Float    @map("fatigue_score")
+  voiceStress  Float    @map("voice_stress")
+  meetingCount Int      @default(0) @map("meeting_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId, date])
+  @@index([date])
+  @@map("daily_metrics")
+}
+
+model BurnoutAlert {
+  id        String          @id @default(uuid())
+  teamId    String          @map("team_id")
+  team      Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  severity  BurnoutSeverity
+  reason    String
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  @@index([teamId, createdAt])
+  @@map("burnout_alerts")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
