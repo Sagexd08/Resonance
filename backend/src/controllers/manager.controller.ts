@@ -17,13 +17,13 @@ export async function getTeamHeatmap(req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Verify team exists
+    
     const team = await prisma.team.findUnique({
       where: { id: teamId },
       include: {
         users: {
           select: {
-            id: true, // Only need IDs for querying metrics
+            id: true, 
           },
         },
       },
@@ -34,14 +34,14 @@ export async function getTeamHeatmap(req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Get date range (last 7 days)
+    
     const endDate = new Date();
     endDate.setHours(23, 59, 59, 999);
     const startDate = new Date(endDate);
     startDate.setDate(startDate.getDate() - 7);
     startDate.setHours(0, 0, 0, 0);
 
-    // Get all metrics for team users in date range
+    
     const userIds = team.users.map((u) => u.id);
     const metrics = await prisma.dailyMetric.findMany({
       where: {
@@ -53,7 +53,7 @@ export async function getTeamHeatmap(req: Request, res: Response): Promise<void>
       },
     });
 
-    // Calculate team averages per day
+    
     const dailyAverages: Record<string, { flowScore: number; count: number }> = {};
 
     for (const metric of metrics) {
@@ -65,22 +65,22 @@ export async function getTeamHeatmap(req: Request, res: Response): Promise<void>
       dailyAverages[dateKey].count += 1;
     }
 
-    // Calculate overall team average
+    
     const teamAverage =
       metrics.length > 0
         ? metrics.reduce((sum, m) => sum + m.flowScore, 0) / metrics.length
         : 0;
 
-    // Format response (privacy: no individual data)
+    
     const heatmapData = Object.entries(dailyAverages).map(([date, data]) => ({
       date,
       averageFlowScore: data.count > 0 ? data.flowScore / data.count : 0,
       sampleCount: data.count,
     }));
 
-    // Check if team average is below threshold and create alert if needed
+    
     if (teamAverage < 50 && metrics.length > 0) {
-      // Check if alert already exists for today
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -94,7 +94,7 @@ export async function getTeamHeatmap(req: Request, res: Response): Promise<void>
       });
 
       if (!existingAlert) {
-        // Determine severity
+        
         let severity: "LOW" | "MED" | "HIGH" = "LOW";
         if (teamAverage < 30) {
           severity = "HIGH";

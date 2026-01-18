@@ -17,7 +17,7 @@ interface ExcuseRequest {
 export async function generateExcuseEmail(request: ExcuseRequest): Promise<string> {
   const { meetingName, managerName } = request;
 
-  // If OpenAI API key is available, use it
+  
   if (OPENAI_API_KEY) {
     try {
       const response = await axios.post(
@@ -50,11 +50,11 @@ export async function generateExcuseEmail(request: ExcuseRequest): Promise<strin
       return response.data.choices[0].message.content.trim();
     } catch (error) {
       console.error("OpenAI API error, using fallback:", error);
-      // Fall through to hardcoded template
+      
     }
   }
 
-  // Hardcoded professional template (MVP fallback)
+  
   const templates = [
     `Hi ${managerName},\n\nI hope this message finds you well. Unfortunately, I won't be able to attend the "${meetingName}" meeting due to a prior commitment that I'm unable to reschedule.\n\nI apologize for any inconvenience this may cause. Please let me know if there's anything I can review beforehand or if you'd like to schedule a brief follow-up.\n\nBest regards`,
 
@@ -63,6 +63,6 @@ export async function generateExcuseEmail(request: ExcuseRequest): Promise<strin
     `Hi ${managerName},\n\nI need to excuse myself from "${meetingName}" as I have a conflicting appointment that cannot be moved.\n\nI apologize for the short notice and any disruption this may cause. I'll make sure to review any materials shared and follow up if needed.\n\nThanks for understanding.\n\nBest regards`,
   ];
 
-  // Return a random template
+  
   return templates[Math.floor(Math.random() * templates.length)];
 }

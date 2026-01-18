@@ -25,7 +25,7 @@ class PositionalEncoding(nn.Module):
         
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0)  # (1, max_len, d_model)
+        pe = pe.unsqueeze(0)                         
         
         self.register_buffer('pe', pe)
     
@@ -60,12 +60,12 @@ class MultiHeadSelfAttention(nn.Module):
     ) -> torch.Tensor:
         batch_size, seq_len, _ = x.shape
         
-        # Linear projections
+                            
         q = self.w_q(x).view(batch_size, seq_len, self.n_heads, self.d_k).transpose(1, 2)
         k = self.w_k(x).view(batch_size, seq_len, self.n_heads, self.d_k).transpose(1, 2)
         v = self.w_v(x).view(batch_size, seq_len, self.n_heads, self.d_k).transpose(1, 2)
         
-        # Scaled dot-product attention
+                                      
         attn_scores = torch.matmul(q, k.transpose(-2, -1)) / self.scale
         
         if mask is not None:
@@ -74,7 +74,7 @@ class MultiHeadSelfAttention(nn.Module):
         attn_probs = F.softmax(attn_scores, dim=-1)
         attn_probs = self.dropout(attn_probs)
         
-        # Apply attention to values
+                                   
         context = torch.matmul(attn_probs, v)
         context = context.transpose(1, 2).contiguous().view(batch_size, seq_len, self.d_model)
         
@@ -107,11 +107,11 @@ class TransformerEncoderLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
     
     def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
-        # Pre-norm self-attention with residual
+                                               
         attn_out = self.self_attn(self.norm1(x), mask)
         x = x + self.dropout(attn_out)
         
-        # Pre-norm feed-forward with residual
+                                             
         ff_out = self.ff(self.norm2(x))
         x = x + self.dropout(ff_out)
         
@@ -123,37 +123,37 @@ class EmotionalFeatureEncoder(nn.Module):
     
     def __init__(self, d_model: int):
         super().__init__()
-        # Continuous feature projections
+                                        
         self.mood_proj = nn.Linear(1, d_model // 3)
         self.energy_proj = nn.Linear(1, d_model // 3)
         self.stress_proj = nn.Linear(1, d_model // 3 + d_model % 3)
         
-        # Temporal embedding (day of week, time of day)
+                                                       
         self.day_embed = nn.Embedding(7, d_model // 4)
         self.hour_embed = nn.Embedding(24, d_model // 4)
         
-        # Combine all features
+                              
         self.combine = nn.Linear(d_model + d_model // 2, d_model)
         self.norm = nn.LayerNorm(d_model)
     
     def forward(
         self, 
-        mood: torch.Tensor,      # (batch, seq, 1)
-        energy: torch.Tensor,    # (batch, seq, 1)
-        stress: torch.Tensor,    # (batch, seq, 1)
-        day_of_week: torch.Tensor,  # (batch, seq)
-        hour_of_day: torch.Tensor   # (batch, seq)
+        mood: torch.Tensor,                       
+        energy: torch.Tensor,                     
+        stress: torch.Tensor,                     
+        day_of_week: torch.Tensor,                
+        hour_of_day: torch.Tensor                 
     ) -> torch.Tensor:
-        # Encode continuous features
+                                    
         mood_emb = self.mood_proj(mood)
         energy_emb = self.energy_proj(energy)
         stress_emb = self.stress_proj(stress)
         
-        # Encode temporal features
+                                  
         day_emb = self.day_embed(day_of_week)
         hour_emb = self.hour_embed(hour_of_day)
         
-        # Concatenate all embeddings
+                                    
         combined = torch.cat([mood_emb, energy_emb, stress_emb, day_emb, hour_emb], dim=-1)
         
         return self.norm(self.combine(combined))
@@ -176,9 +176,9 @@ class ResonanceTransformer(nn.Module):
         n_heads: int = 8,
         n_layers: int = 6,
         d_ff: int = 1024,
-        max_seq_len: int = 90,  # ~3 months of daily entries
-        n_risk_classes: int = 4,  # thriving, stable, struggling, at-risk
-        n_recommendations: int = 10,  # top-k recommendation candidates
+        max_seq_len: int = 90,                              
+        n_risk_classes: int = 4,                                         
+        n_recommendations: int = 10,                                   
         dropout: float = 0.1
     ):
         super().__init__()
@@ -194,7 +194,7 @@ class ResonanceTransformer(nn.Module):
         
         self.final_norm = nn.LayerNorm(d_model)
         
-        # Output heads
+                      
         self.risk_head = nn.Sequential(
             nn.Linear(d_model, d_model // 2),
             nn.GELU(),
@@ -207,7 +207,7 @@ class ResonanceTransformer(nn.Module):
             nn.GELU(),
             nn.Dropout(dropout),
             nn.Linear(d_model // 2, 1),
-            nn.Sigmoid()  # Output 0-1 probability
+            nn.Sigmoid()                          
         )
         
         self.recommendation_head = nn.Sequential(
@@ -217,7 +217,7 @@ class ResonanceTransformer(nn.Module):
             nn.Linear(d_model, n_recommendations)
         )
         
-        # Initialize weights
+                            
         self._init_weights()
     
     def _init_weights(self):
@@ -234,22 +234,22 @@ class ResonanceTransformer(nn.Module):
         hour_of_day: torch.Tensor,
         mask: Optional[torch.Tensor] = None
     ) -> Dict[str, torch.Tensor]:
-        # Encode emotional features
+                                   
         x = self.feature_encoder(mood, energy, stress, day_of_week, hour_of_day)
         
-        # Add positional encoding
+                                 
         x = self.pos_encoding(x)
         
-        # Pass through transformer layers
+                                         
         for layer in self.encoder_layers:
             x = layer(x, mask)
         
         x = self.final_norm(x)
         
-        # Use the last token's representation for predictions
-        last_hidden = x[:, -1, :]  # (batch, d_model)
+                                                             
+        last_hidden = x[:, -1, :]                    
         
-        # Generate outputs
+                          
         risk_logits = self.risk_head(last_hidden)
         burnout_prob = self.burnout_head(last_hidden)
         recommendation_logits = self.recommendation_head(last_hidden)
@@ -272,7 +272,7 @@ class ResonanceTransformer(nn.Module):
         return [categories[i] for i in indices]
 
 
-# Recommendation templates
+                          
 RECOMMENDATION_TEMPLATES = [
     "Schedule a brief mindfulness break during peak stress hours.",
     "Consider a walking meeting to boost both energy and engagement.",
@@ -305,8 +305,8 @@ def load_model(checkpoint_path: Optional[str] = None) -> ResonanceTransformer:
 
 def generate_recommendations(model: ResonanceTransformer, context: Dict[str, Any]) -> List[str]:
     """Generate recommendations based on context."""
-    # For now, use a simple rule-based approach with model probabilities
-    # In production, this would use actual model inference
+                                                                        
+                                                          
     
     avg_mood = context.get('avgMood', 3.0)
     burnout_index = context.get('burnoutIndex', 30.0)
@@ -314,45 +314,45 @@ def generate_recommendations(model: ResonanceTransformer, context: Dict[str, Any
     recommendations = []
     
     if burnout_index > 60:
-        recommendations.append(RECOMMENDATION_TEMPLATES[6])  # Review workload
-        recommendations.append(RECOMMENDATION_TEMPLATES[3])  # Flexible hours
+        recommendations.append(RECOMMENDATION_TEMPLATES[6])                   
+        recommendations.append(RECOMMENDATION_TEMPLATES[3])                  
     
     if avg_mood < 2.5:
-        recommendations.append(RECOMMENDATION_TEMPLATES[5])  # Support resources
-        recommendations.append(RECOMMENDATION_TEMPLATES[7])  # Check-ins
+        recommendations.append(RECOMMENDATION_TEMPLATES[5])                     
+        recommendations.append(RECOMMENDATION_TEMPLATES[7])             
     elif avg_mood < 3.5:
-        recommendations.append(RECOMMENDATION_TEMPLATES[0])  # Mindfulness
-        recommendations.append(RECOMMENDATION_TEMPLATES[4])  # Team social
+        recommendations.append(RECOMMENDATION_TEMPLATES[0])               
+        recommendations.append(RECOMMENDATION_TEMPLATES[4])               
     else:
-        recommendations.append(RECOMMENDATION_TEMPLATES[2])  # Recognize achievements
-        recommendations.append(RECOMMENDATION_TEMPLATES[9])  # Celebrate wins
+        recommendations.append(RECOMMENDATION_TEMPLATES[2])                          
+        recommendations.append(RECOMMENDATION_TEMPLATES[9])                  
     
-    # Always add a productivity tip
-    recommendations.append(RECOMMENDATION_TEMPLATES[8])  # Focus time
+                                   
+    recommendations.append(RECOMMENDATION_TEMPLATES[8])              
     
-    return recommendations[:5]  # Return top 5
+    return recommendations[:5]                
 
 
 def main():
     """CLI interface for the recommendation engine."""
     try:
-        # Read input from stdin
+                               
         input_data = json.load(sys.stdin)
         
         org_id = input_data.get('orgId', '')
         context = input_data.get('context', {})
         
-        # Load model (in production, cache this)
+                                                
         model = load_model()
         
-        # Generate recommendations
+                                  
         recommendations = generate_recommendations(model, context)
         
-        # Output as JSON
+                        
         print(json.dumps(recommendations))
         
     except Exception as e:
-        # Return fallback on error
+                                  
         fallback = [
             "Encourage regular breaks to maintain well-being.",
             "Schedule team sync to align on priorities.",

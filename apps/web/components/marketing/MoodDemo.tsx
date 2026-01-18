@@ -34,7 +34,7 @@ export const MoodDemo = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-16 items-center">
-                    {/* Interaction Panel */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -86,7 +86,7 @@ export const MoodDemo = () => {
                         </div>
                     </motion.div>
 
-                    {/* Visualizer Panel */}
+                    {}
                     <motion.div
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -94,7 +94,7 @@ export const MoodDemo = () => {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="relative perspective-1000"
                     >
-                        {/* Mock Dashboard Card */}
+                        {}
                         <motion.div
                             className="glass p-8 transform rotate-y-12 rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-[#0a0a1a]/80 backdrop-blur-xl"
                             whileHover={{ rotateY: 0, scale: 1.02 }}
@@ -108,7 +108,7 @@ export const MoodDemo = () => {
                                 </div>
                             </div>
 
-                            {/* Mock Chart Bars */}
+                            {}
                             <div className="space-y-8">
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-sm font-medium text-gray-400">
@@ -144,7 +144,7 @@ export const MoodDemo = () => {
                                 </div>
                             </div>
 
-                            {/* Mock Team Members */}
+                            {}
                             <div className="mt-10 pt-6 border-t border-white/10 flex items-center justify-between">
                                 <div className="text-xs text-gray-500 font-medium uppercase tracking-wider">Active Members</div>
                                 <div className="flex -space-x-4">
@@ -160,7 +160,7 @@ export const MoodDemo = () => {
                             </div>
                         </motion.div>
 
-                        {/* Decorative blobs */}
+                        {}
                         <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-blue-600/20 blur-[100px] rounded-full mix-blend-screen pointer-events-none" />
                     </motion.div>
                 </div>

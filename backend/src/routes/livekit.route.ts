@@ -4,12 +4,12 @@ import { authMiddleware, AuthRequest } from '../middlewares/auth.middleware.js';
 
 const router: Router = express.Router();
 
-// Initialize LiveKit credentials from environment
+
 const LIVEKIT_URL = process.env.LIVEKIT_URL || '';
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || '';
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || '';
 
-// Validate required environment variables
+
 if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
   console.warn('⚠️  Warning: Missing LiveKit environment variables (LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET). LiveKit endpoints will fail until configured.');
 }
@@ -20,7 +20,7 @@ if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
  */
 router.post('/token', async (req: Request, res: Response): Promise<void> => {
   try {
-    // Check if LiveKit is configured
+    
     if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
       res.status(503).json({
         success: false,
@@ -39,7 +39,7 @@ router.post('/token', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Create access token with identity and metadata
+    
     const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
       identity: username,
       metadata: metadata ? JSON.stringify(metadata) : undefined,
@@ -139,7 +139,7 @@ router.get('/config', (_req: Request, res: Response): void => {
   res.json({
     success: true,
     liveKitUrl: LIVEKIT_URL,
-    // Don't expose API credentials to client
+    
   });
 });
 
@@ -149,8 +149,8 @@ router.get('/config', (_req: Request, res: Response): void => {
  */
 router.get('/rooms', async (_req: Request, res: Response): Promise<void> => {
   try {
-    // This would require LiveKit server SDK
-    // For now, return mock data
+    
+    
     res.json({
       success: true,
       rooms: [

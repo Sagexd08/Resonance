@@ -6,7 +6,7 @@
         "generate": "prisma generate",
         "migrate": "prisma migrate dev",
         "push": "prisma db push",
-        "seed": "ts-node seed.ts",
+        "seed": "tsx seed.ts",
         "studio": "prisma studio"
     },
     "dependencies": {
@@ -15,12 +15,14 @@
     },
     "devDependencies": {
         "@types/bcryptjs": "2.4.6",
+        "pg": "^8.17.1",
         "prisma": "6.0.0",
         "ts-node": "10.9.2",
+        "tsx": "^4.21.0",
         "typescript": "^5.5.2"
     },
     "prisma": {
         "schema": "schema.prisma",
-        "seed": "ts-node seed.ts"
+        "seed": "tsx seed.ts"
     }
 }

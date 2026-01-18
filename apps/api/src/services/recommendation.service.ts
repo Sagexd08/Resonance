@@ -24,7 +24,7 @@ export class RecommendationService {
      */
     async getRecommendations(orgId: string, context: Record<string, unknown>): Promise<string[]> {
         if (!this.modelPath) {
-            // Fallback placeholder recommendations
+            
             return [
                 'Encourage a short walk break after prolonged screen time.',
                 'Schedule a team coffee chat to boost engagement.',
@@ -63,7 +63,7 @@ export class RecommendationService {
                     if (errorOutput) {
                         console.error('Model error:', errorOutput);
                     }
-                    // Return fallback on error
+                    
                     resolve([
                         'Consider reviewing workload distribution.',
                         'Promote flexible working hours during high-stress periods.',

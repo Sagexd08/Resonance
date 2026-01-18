@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
         const { mood, note } = await req.json();
 
-        // Map mood labels to numeric scores
+        
         const moodScoreMap: Record<string, { mood: number; energy: number; stress: number }> = {
             'Energized': { mood: 8, energy: 9, stress: 3 },
             'Happy': { mood: 9, energy: 7, stress: 2 },
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
         const scores = moodScoreMap[mood] || { mood: 5, energy: 5, stress: 5 };
 
-        // Find user by email
+        
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
         });
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Create emotional entry
+        
         const entry = await prisma.emotionalEntry.create({
             data: {
                 userId: user.id,

@@ -16,10 +16,10 @@ def load_burnout_data(data_dir):
     """Load and preprocess burnout dataset."""
     data_path = Path(data_dir)
     
-    # Look for CSV files
+                        
     csv_files = list(data_path.glob("*.csv"))
     if not csv_files:
-        # Check subdirectories
+                              
         for subdir in data_path.iterdir():
             if subdir.is_dir():
                 csv_files.extend(subdir.glob("*.csv"))
@@ -27,7 +27,7 @@ def load_burnout_data(data_dir):
     if not csv_files:
         raise ValueError(f"No CSV files found in {data_dir}")
     
-    # Load the first CSV (usually train.csv or main dataset)
+                                                            
     df = pd.read_csv(csv_files[0])
     print(f"Loaded dataset: {csv_files[0].name}")
     print(f"Shape: {df.shape}")
@@ -39,7 +39,7 @@ def preprocess_data(df):
     """Preprocess the burnout dataset."""
     df = df.copy()
     
-    # Identify target column (usually 'Burn Rate' or 'Employee ID' indicates it's a target)
+                                                                                           
     target_candidates = ['Burn Rate', 'burnout', 'Burnout', 'burn_rate', 'target']
     target_col = None
     for col in target_candidates:
@@ -48,35 +48,35 @@ def preprocess_data(df):
             break
     
     if target_col is None:
-        # Try to infer: usually last column or column with numeric values
+                                                                         
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         if len(numeric_cols) > 0:
-            target_col = numeric_cols[-1]  # Assume last numeric column is target
+            target_col = numeric_cols[-1]                                        
         else:
             raise ValueError("Could not identify target column")
     
     print(f"Target column: {target_col}")
     
-    # Separate features and target
+                                  
     X = df.drop(columns=[target_col])
     y = df[target_col]
     
-    # Handle categorical columns
+                                
     label_encoders = {}
     for col in X.select_dtypes(include=['object']).columns:
         le = LabelEncoder()
         X[col] = le.fit_transform(X[col].astype(str))
         label_encoders[col] = le
     
-    # Handle missing values
+                           
     X = X.fillna(X.mean())
     
-    # Normalize numerical features
+                                  
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
     
-    # If target is continuous, convert to binary (burnout/no burnout)
+                                                                     
     if y.dtype in [np.float64, np.int64] and y.nunique() > 2:
         threshold = y.median()
         y_binary = (y > threshold).astype(int)
@@ -91,11 +91,11 @@ def main():
     print("Training Burnout Prediction Model (XGBoost)")
     print("="*60)
     
-    # Load data
+               
     print(f"\nLoading dataset from {config.BURNOUT_DATA_DIR}")
     df = load_burnout_data(config.BURNOUT_DATA_DIR)
     
-    # Preprocess
+                
     print("\nPreprocessing data...")
     X, y, scaler, label_encoders = preprocess_data(df)
     
@@ -103,12 +103,12 @@ def main():
     print(f"Samples: {X.shape[0]}")
     print(f"Target distribution:\n{y.value_counts()}")
     
-    # Split data
+                
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
     
-    # Create XGBoost model
+                          
     print("\nTraining XGBoost model...")
     model = xgb.XGBClassifier(
         n_estimators=config.BURNOUT_CONFIG["n_estimators"],
@@ -121,14 +121,14 @@ def main():
         use_label_encoder=False
     )
     
-    # Train
+           
     model.fit(
         X_train, y_train,
         eval_set=[(X_test, y_test)],
         verbose=True
     )
     
-    # Evaluate
+              
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     
@@ -141,12 +141,12 @@ def main():
     print("\nConfusion Matrix:")
     print(confusion_matrix(y_test, y_pred))
     
-    # Cross-validation
+                      
     print(f"\nPerforming {config.BURNOUT_CONFIG['cv_folds']}-fold cross-validation...")
     cv_scores = cross_val_score(model, X, y, cv=config.BURNOUT_CONFIG["cv_folds"], scoring='accuracy')
     print(f"CV Accuracy: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
     
-    # Feature importance
+                        
     print("\nTop 10 Most Important Features:")
     feature_importance = pd.DataFrame({
         'feature': X.columns,
@@ -154,7 +154,7 @@ def main():
     }).sort_values('importance', ascending=False)
     print(feature_importance.head(10))
     
-    # Save model and preprocessors
+                                  
     config.MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
     model_data = {
@@ -167,13 +167,13 @@ def main():
     with open(config.BURNOUT_MODEL_PATH, 'wb') as f:
         pickle.dump(model_data, f)
     
-    # Calculate F1 score
+                        
     from sklearn.metrics import f1_score, confusion_matrix, classification_report
     f1 = f1_score(y_test, y_pred, average='weighted')
     f1_macro = f1_score(y_test, y_pred, average='macro')
     f1_per_class = f1_score(y_test, y_pred, average=None)
     
-    # Confusion matrix
+                      
     cm = confusion_matrix(y_test, y_pred)
     
     print(f"\n{'='*60}")
@@ -190,7 +190,7 @@ def main():
     print(f"\nConfusion Matrix:")
     print(cm)
     
-    # Save confusion matrix plot
+                                
     import matplotlib.pyplot as plt
     import seaborn as sns
     plt.figure(figsize=(8, 6))

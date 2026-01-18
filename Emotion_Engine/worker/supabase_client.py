@@ -26,13 +26,13 @@ async def save_user_emotion(user_id: str, emotion: str, timestamp: str) -> bool:
             "Emotion": emotion,
             "TimeStamp": timestamp
         }
-        # execute() is synchronous in the current supabase-py client version usually, 
-        # but we can wrap it or just call it. For high throughput, maybe async is better,
-        # but for this worker, simple call is fine.
+                                                                                      
+                                                                                         
+                                                   
         response = supabase.table("user_emotion").insert(data).execute()
         
-        # Check for success? The generic client raises exception on error usually 
-        # or returns data.
+                                                                                  
+                          
         if response.data:
             print(f"Saved for userid {user_id}: {emotion}")
             return True

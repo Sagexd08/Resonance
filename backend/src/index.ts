@@ -12,7 +12,7 @@ import { initializeDatabase } from "./db/init.js";
 import prisma from "./db/prisma.js";
 
 
-// Initialize Database and Start Server
+
 (async () => {
   try {
     console.log("Starting server initialization...");
@@ -24,7 +24,7 @@ import prisma from "./db/prisma.js";
       console.log(`Accessible at http://localhost:${port}`);
     });
 
-    // Graceful shutdown
+    
     process.on("SIGTERM", async () => {
       console.log("SIGTERM received, closing Prisma connection...");
       await prisma.$disconnect();

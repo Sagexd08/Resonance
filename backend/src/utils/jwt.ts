@@ -6,17 +6,17 @@ import path from "path";
 import { getRefreshToken } from "../services/auth.service.js";
 import { fileURLToPath } from "url";
 
-//
-// PATH SETUP
-//
+
+
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const keysDir = path.join(__dirname, "../../keys");
 
-//
-// SAFE LOAD FUNCTIONS (NO TOP-LEVEL READS)
-//
+
+
+
 const loadPrivateKey = () => {
   return fs.readFileSync(path.join(keysDir, "private.key"), "utf8");
 };
@@ -25,15 +25,15 @@ const loadPublicKey = () => {
   return fs.readFileSync(path.join(keysDir, "public.key"), "utf8");
 };
 
-//
-// TOKEN LIFETIMES
-//
+
+
+
 const ACCESS_TOKEN_EXP = "10m";
 const REFRESH_TOKEN_EXP_DAYS = 14;
 
-//
-// PAYLOAD TYPE
-//
+
+
+
 export interface JWTPayload {
   sub: string;
   uuid: string;
@@ -42,9 +42,9 @@ export interface JWTPayload {
   exp?: number;
 }
 
-//
-// ACCESS TOKEN GENERATION
-//
+
+
+
 export const generateAccessToken = (UUID: string): string => {
   const jti = crypto.randomUUID();
 
@@ -60,9 +60,9 @@ export const generateAccessToken = (UUID: string): string => {
   });
 };
 
-//
-// ACCESS TOKEN VERIFICATION
-//
+
+
+
 export const verifyAccessToken = (token: string): JWTPayload => {
   try {
     return jwt.verify(token, loadPublicKey(), {
@@ -73,9 +73,9 @@ export const verifyAccessToken = (token: string): JWTPayload => {
   }
 };
 
-//
-// REFRESH TOKEN GENERATION
-//
+
+
+
 export const generateRefreshToken = (): {
   token: string;
   expiresAt: Date;
@@ -88,9 +88,9 @@ export const generateRefreshToken = (): {
   return { token, expiresAt };
 };
 
-//
-// REFRESH TOKEN VERIFICATION
-//
+
+
+
 export const verifyRefreshToken = async (
   token: string
 ): Promise<{ valid: boolean; userId?: string }> => {

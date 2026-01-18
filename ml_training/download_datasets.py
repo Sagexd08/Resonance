@@ -7,7 +7,7 @@ import zipfile
 import kaggle
 from pathlib import Path
 
-# Dataset configurations
+                        
 DATASETS = [
     {
         "name": "redwankarimsony/hackerearth-employee-burnout-challenge",
@@ -33,11 +33,11 @@ def download_and_extract(dataset_name: str, target_dir: str):
     print(f"Target directory: {target_dir}")
     print(f"{'='*60}")
     
-    # Create target directory
+                             
     target_path = Path(target_dir)
     target_path.mkdir(parents=True, exist_ok=True)
     
-    # Download dataset
+                      
     try:
         kaggle.api.dataset_download_files(
             dataset_name,
@@ -55,7 +55,7 @@ def main():
     print("Starting dataset download process...")
     print(f"Working directory: {os.getcwd()}")
     
-    # Verify Kaggle credentials
+                               
     kaggle_dir = Path.home() / ".kaggle"
     kaggle_json = kaggle_dir / "kaggle.json"
     
@@ -66,7 +66,7 @@ def main():
     
     print(f"[OK] Found Kaggle credentials at {kaggle_json}")
     
-    # Download each dataset
+                           
     success_count = 0
     for dataset in DATASETS:
         if download_and_extract(dataset["name"], dataset["target_dir"]):

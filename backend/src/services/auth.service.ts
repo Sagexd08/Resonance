@@ -5,13 +5,13 @@ import prisma from "../db/prisma.js";
 import { hashPassword, comparePassword } from "../utils/password.js";
 import type { user } from "../types/auth.types.js";
 
-// 1) Verify User Credentials
+
 export async function verifyUserCredentials(
   userId: string,
   userPass: string
 ): Promise<user | null> {
   try {
-    // Try email first, then ID
+    
     const dbUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -25,14 +25,14 @@ export async function verifyUserCredentials(
       return null;
     }
 
-    // Compare password
+    
     const isPasswordValid = await comparePassword(userPass, dbUser.passwordHash);
 
     if (!isPasswordValid) {
       return null;
     }
 
-    // Map to user type
+    
     const user: user = {
       uuid: dbUser.id,
       id: dbUser.email,
@@ -48,7 +48,7 @@ export async function verifyUserCredentials(
   }
 }
 
-// 2) Register New User
+
 export async function registerUser(
   email: string,
   password: string,
@@ -56,19 +56,19 @@ export async function registerUser(
   teamId?: string
 ): Promise<user | null> {
   try {
-    // Check if user already exists
+    
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
-      return null; // User already exists
+      return null; 
     }
 
-    // Hash password
+    
     const hashedPassword = await hashPassword(password);
 
-    // Create new user
+    
     const newDbUser = await prisma.user.create({
       data: {
         email,
@@ -93,14 +93,14 @@ export async function registerUser(
   }
 }
 
-// 3) Save Refresh Token
+
 export async function saveRefreshToken(
   token: string,
   userId: string,
   expiresAt: Date
 ): Promise<void> {
   try {
-    // Find user by email or ID
+    
     const user = await prisma.user.findFirst({
       where: {
         OR: [
@@ -115,7 +115,7 @@ export async function saveRefreshToken(
       return;
     }
 
-    // Save refresh token
+    
     await prisma.refreshToken.upsert({
       where: { token },
       update: {
@@ -132,7 +132,7 @@ export async function saveRefreshToken(
   }
 }
 
-// 4) Invalidate Refresh Token
+
 export async function invalidateRefreshToken(token: string): Promise<void> {
   try {
     await prisma.refreshToken.delete({
@@ -143,7 +143,7 @@ export async function invalidateRefreshToken(token: string): Promise<void> {
   }
 }
 
-// 5) Find user by refresh token
+
 export async function findUserByRefreshToken(token: string): Promise<user | null> {
   try {
     const refreshToken = await prisma.refreshToken.findUnique({
@@ -172,7 +172,7 @@ export async function findUserByRefreshToken(token: string): Promise<user | null
   }
 }
 
-// 6) Get user by UUID
+
 export async function getUserByUuid(uuid: string): Promise<user | null> {
   try {
     const dbUser = await prisma.user.findUnique({
@@ -198,7 +198,7 @@ export async function getUserByUuid(uuid: string): Promise<user | null> {
   }
 }
 
-// 7) Get refresh token info
+
 export async function getRefreshToken(token: string): Promise<{
   user_id: string;
   expires_at: Date;

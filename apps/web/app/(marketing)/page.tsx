@@ -14,11 +14,11 @@ import DarkVeil from '@/components/ui/DarkVeil';
 export default function HomePage() {
     return (
         <div className="min-h-screen bg-[#0a0a1a] text-white selection:bg-blue-500/30 overflow-hidden">
-            {/* <Navbar /> Replaced by Dock */}
+            {}
 
             <main>
                 <div className="relative">
-                    {/* Background effects */}
+                    {}
                     <div className="absolute inset-0 z-0 opacity-40">
                         <DarkVeil
                             hueShift={0}
@@ -31,7 +31,7 @@ export default function HomePage() {
                         />
                     </div>
 
-                    {/* Animated Blobs */}
+                    {}
                     <motion.div
                         className="fixed top-0 left-1/4 w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] -z-10 mix-blend-screen pointer-events-none"
                         animate={{ x: [0, 100, 0], y: [0, 50, 0], opacity: [0.3, 0.5, 0.3] }}

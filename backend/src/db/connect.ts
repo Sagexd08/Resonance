@@ -65,8 +65,8 @@ export async function connectToDB() {
           client: client,
           query: async (sql: string, params?: any[]) => {
             const result = await client.execute({ sql, args: params || [] });
-            // Map LibSQL ResultSet to a structure compatible with existing code if needed.
-            // Existing code expects an array of rows for query results.
+            
+            
             return result.rows;
           },
           run: async (sql: string, params?: any[]) => {

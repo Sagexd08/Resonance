@@ -7,14 +7,14 @@ import { syncBiometrics } from "../controllers/sync.controller.js";
 
 const router = Router();
 
-// Configure multer for file uploads (5MB limit for t2.micro)
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 5 * 1024 * 1024, 
   },
   fileFilter: (req, file, cb) => {
-    // Accept audio and image files
+    
     if (
       file.mimetype.startsWith("audio/") ||
       file.mimetype.startsWith("image/")

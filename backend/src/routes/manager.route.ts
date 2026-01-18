@@ -7,7 +7,7 @@ import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// All manager routes require authentication
+
 router.use(authMiddleware);
 
 /**

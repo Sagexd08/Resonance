@@ -1,10 +1,10 @@
 import crypto from "crypto";
 
-type KeyFormat = BufferEncoding; // "hex" | "base64" | "utf8" | etc.
+type KeyFormat = BufferEncoding; 
 
 interface KeyOptions {
-  size?: number; // bytes
-  format?: KeyFormat; // valid buffer encoding
+  size?: number; 
+  format?: KeyFormat; 
 }
 
 export function generateEncrytionDecrytionKeys({

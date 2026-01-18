@@ -126,7 +126,7 @@ router.post('/transcript/share', authMiddleware, async (req: AuthRequest, res: R
       return;
     }
 
-    // TODO: Encrypt transcript before storing (use AES256)
+    
     const transcriptJson = transcript ? JSON.stringify(transcript) : null;
     const emotionMetricsJson = emotionMetrics ? JSON.stringify(emotionMetrics) : null;
     const consentFlagsJson = consentFlags ? JSON.stringify(consentFlags) : null;

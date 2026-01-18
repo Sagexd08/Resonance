@@ -21,11 +21,11 @@ class EmotionDetectionConfig:
         self.max_skip_frames = 10
         self.smoothing_window = 5
         self.face_tracking_threshold = 0.3
-        self.performance_check_interval = 10  # frames
+        self.performance_check_interval = 10          
         self.target_fps = 10
 
-        # Filter out inappropriate emotions
-        self.emotion_filter = {"Ahegao"}  # Emotions to exclude
+                                           
+        self.emotion_filter = {"Ahegao"}                       
 
         self.webcam_width = 1920
         self.webcam_height = 1080
@@ -46,7 +46,7 @@ class FaceTracker:
         x1, y1, w1, h1 = box1
         x2, y2, w2, h2 = box2
 
-        # Calculate intersection
+                                
         xi1 = max(x1, x2)
         yi1 = max(y1, y2)
         xi2 = min(x1 + w1, x2 + w2)
@@ -62,7 +62,7 @@ class FaceTracker:
 
     def update_tracks(self, detected_faces):
         """Update face tracks with new detections"""
-        # Mark all existing tracks as not found
+                                               
         for track_id in self.tracked_faces:
             self.tracked_faces[track_id]["found"] = False
             self.tracked_faces[track_id]["missing_frames"] += 1
@@ -70,7 +70,7 @@ class FaceTracker:
         assigned_faces = []
         updated_tracks = {}
 
-        # Try to match each detected face with existing tracks
+                                                              
         for face in detected_faces:
             best_match_id = None
             best_iou = 0
@@ -85,14 +85,14 @@ class FaceTracker:
                     best_match_id = track_id
 
             if best_match_id is not None:
-                # Update existing track
+                                       
                 self.tracked_faces[best_match_id]["bbox"] = face
                 self.tracked_faces[best_match_id]["found"] = True
                 self.tracked_faces[best_match_id]["missing_frames"] = 0
                 updated_tracks[best_match_id] = face
                 assigned_faces.append(face)
             else:
-                # Create new track
+                                  
                 track_id = self.next_id
                 self.next_id += 1
                 self.tracked_faces[track_id] = {
@@ -102,7 +102,7 @@ class FaceTracker:
                 }
                 updated_tracks[track_id] = face
 
-        # Remove tracks that have been missing for too long
+                                                           
         to_remove = [
             track_id
             for track_id, track_data in self.tracked_faces.items()
@@ -135,7 +135,7 @@ class EmotionSmoother:
 
         history = list(self.emotion_history[track_id])
 
-        # Weight recent predictions more heavily
+                                                
         weights = np.linspace(0.5, 1.0, len(history))
         emotion_scores = defaultdict(float)
         total_weight = 0
@@ -148,11 +148,11 @@ class EmotionSmoother:
         if total_weight == 0:
             return "Unknown", 0.0
 
-        # Normalize scores
+                          
         for emotion in emotion_scores:
             emotion_scores[emotion] /= total_weight
 
-        best_emotion = max(emotion_scores, key=emotion_scores.get)  # type: ignore
+        best_emotion = max(emotion_scores, key=emotion_scores.get)                
         return best_emotion, emotion_scores[best_emotion]
 
     def cleanup_old_tracks(self, active_track_ids):
@@ -197,9 +197,9 @@ class PerformanceMonitor:
     def get_recommended_skip_frames(self, base_skip, max_skip):
         """Get recommended frame skip based on performance"""
         current_fps = self.get_current_fps()
-        if current_fps < self.target_fps * 0.8:  # If FPS is too low
+        if current_fps < self.target_fps * 0.8:                     
             return min(max_skip, base_skip + 2)
-        elif current_fps > self.target_fps * 1.2:  # If FPS is too high
+        elif current_fps > self.target_fps * 1.2:                      
             return max(1, base_skip - 1)
         return base_skip
 
@@ -212,24 +212,24 @@ class ImprovedEmotionDetector:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Using device: {self.device}")
 
-        # Initialize components
+                               
         self.face_tracker = FaceTracker(self.config.face_tracking_threshold)
         self.emotion_smoother = EmotionSmoother(self.config.smoothing_window)
         self.performance_monitor = PerformanceMonitor(
             self.config.target_fps, self.config.performance_check_interval
         )
 
-        # Initialize MediaPipe
-        mp_face_detection = mp.solutions.face_detection  # type: ignore
+                              
+        mp_face_detection = mp.solutions.face_detection                
         self.face_detection = mp_face_detection.FaceDetection(
             model_selection=0,
             min_detection_confidence=self.config.min_detection_confidence,
         )
 
-        # Load model
+                    
         self._load_model()
 
-        # Dynamic parameters
+                            
         self.current_skip_frames = self.config.base_skip_frames
         self.frame_count = 0
 
@@ -238,13 +238,13 @@ class ImprovedEmotionDetector:
         try:
             self.model = SiglipForImageClassification.from_pretrained(
                 self.config.model_name
-            ).to(self.device)  # type: ignore
+            ).to(self.device)                
             self.processor = AutoImageProcessor.from_pretrained(
                 self.config.model_name, use_fast=True
             )
             self.model.eval()
 
-            # Define emotion labels (filtered)
+                                              
             all_labels = {
                 0: "Ahegao",
                 1: "Angry",
@@ -254,7 +254,7 @@ class ImprovedEmotionDetector:
                 5: "Surprise",
             }
 
-            # Filter out inappropriate emotions
+                                               
             self.labels = {
                 k: v
                 for k, v in all_labels.items()
@@ -278,13 +278,13 @@ class ImprovedEmotionDetector:
                 bbox = detection.location_data.relative_bounding_box
                 h, w, _ = frame.shape
 
-                # Convert relative coordinates to absolute coordinates
+                                                                      
                 x = int(bbox.xmin * w)
                 y = int(bbox.ymin * h)
                 width = int(bbox.width * w)
                 height = int(bbox.height * h)
 
-                # Filter out faces that are too small
+                                                     
                 if (
                     width >= self.config.min_face_size
                     and height >= self.config.min_face_size
@@ -297,11 +297,11 @@ class ImprovedEmotionDetector:
         """Crop face from frame with proportional padding"""
         x, y, w, h = face_coords
 
-        # Calculate padding based on face size
+                                              
         padding_x = int(w * self.config.padding_ratio)
         padding_y = int(h * self.config.padding_ratio)
 
-        # Apply padding
+                       
         x_start = max(0, x - padding_x)
         y_start = max(0, y - padding_y)
         x_end = min(frame.shape[1], x + w + padding_x)
@@ -329,7 +329,7 @@ class ImprovedEmotionDetector:
 
                 probs = probs.cpu().tolist()
 
-            # Only include filtered emotions
+                                            
             predictions = {}
             for i, prob in enumerate(probs):
                 if i in self.labels:
@@ -338,7 +338,7 @@ class ImprovedEmotionDetector:
             if not predictions:
                 return "Unknown", 0.0, {}
 
-            top_label = max(predictions, key=predictions.get)  # type: ignore
+            top_label = max(predictions, key=predictions.get)                
             top_score = predictions[top_label]
             return top_label, top_score, predictions
 
@@ -348,7 +348,7 @@ class ImprovedEmotionDetector:
 
     def run_detection(self):
         """Main detection loop"""
-        # Initialize webcam
+                           
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
             print("Error: Could not open webcam")
@@ -372,20 +372,20 @@ class ImprovedEmotionDetector:
 
                 self.frame_count += 1
 
-                # Detect faces
+                              
                 faces = self.detect_faces_mediapipe(frame)
 
-                # Update face tracking
+                                      
                 tracked_faces = self.face_tracker.update_tracks(faces)
 
-                # Process emotions every nth frame
+                                                  
                 if self.frame_count % self.current_skip_frames == 0:
                     for track_id, face_coords in tracked_faces.items():
-                        # Crop face from RGB frame
+                                                  
                         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                         cropped_face = self.crop_face(rgb_frame, face_coords)
 
-                        # Classify emotion
+                                          
                         label, score, predictions = self.emotion_classification(
                             cropped_face
                         )
@@ -393,30 +393,30 @@ class ImprovedEmotionDetector:
                         if label not in ["No Face", "Error", "Unknown"]:
                             self.emotion_smoother.add_prediction(track_id, label, score)
 
-                # Clean up old emotion history
+                                              
                 self.emotion_smoother.cleanup_old_tracks(set(tracked_faces.keys()))
 
-                # Draw results
+                              
                 for track_id, (x, y, w, h) in tracked_faces.items():
-                    # Get smoothed emotion
+                                          
                     emotion, confidence = self.emotion_smoother.get_smoothed_emotion(
                         track_id
                     )
 
-                    # Choose color based on emotion
+                                                   
                     color_map = {
-                        "Happy": (0, 255, 0),  # Green
-                        "Sad": (255, 0, 0),  # Blue
-                        "Angry": (0, 0, 255),  # Red
-                        "Surprise": (0, 255, 255),  # Yellow
-                        "Neutral": (128, 128, 128),  # Gray
+                        "Happy": (0, 255, 0),         
+                        "Sad": (255, 0, 0),        
+                        "Angry": (0, 0, 255),       
+                        "Surprise": (0, 255, 255),          
+                        "Neutral": (128, 128, 128),        
                     }
-                    color = color_map.get(emotion, (255, 255, 255))  # Default white
+                    color = color_map.get(emotion, (255, 255, 255))                 
 
-                    # Draw bounding box
+                                       
                     cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
 
-                    # Draw track ID
+                                   
                     cv2.putText(
                         frame,
                         f"ID: {track_id}",
@@ -428,7 +428,7 @@ class ImprovedEmotionDetector:
                         cv2.LINE_AA,
                     )
 
-                    # Display emotion
+                                     
                     display_text = f"{emotion}: {confidence:.2f}"
                     text_y = max(y - 10, 20)
                     cv2.putText(
@@ -442,7 +442,7 @@ class ImprovedEmotionDetector:
                         cv2.LINE_AA,
                     )
 
-                # Show frame info
+                                 
                 current_fps = self.performance_monitor.get_current_fps()
                 info_text = f"Faces: {len(tracked_faces)} | FPS: {current_fps:.1f} | Skip: {self.current_skip_frames}"
                 cv2.putText(
@@ -477,7 +477,7 @@ class ImprovedEmotionDetector:
 
                 cv2.imshow("Improved Facial Emotion Detection", frame)
 
-                # Handle key presses
+                                    
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("q"):
                     break
@@ -485,7 +485,7 @@ class ImprovedEmotionDetector:
                     show_detailed = not show_detailed
                     print(f"Detailed view: {'ON' if show_detailed else 'OFF'}")
 
-                # Performance monitoring and adjustment
+                                                       
                 frame_time = time.time() - frame_start_time
                 self.performance_monitor.add_frame_time(frame_time)
 
@@ -509,12 +509,12 @@ class ImprovedEmotionDetector:
             print("Cleanup completed")
 
 
-# Usage
+       
 if __name__ == "__main__":
     config = EmotionDetectionConfig()
-    # config.min_face_size = 60  
-    # config.smoothing_window = 7 
+                                 
+                                  
 
-    # Create and run detector
+                             
     detector = ImprovedEmotionDetector(config)
     detector.run_detection()

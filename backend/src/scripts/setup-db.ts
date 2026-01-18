@@ -7,7 +7,7 @@ async function setup_database() {
   try {
     console.log("=== Database Setup ===\n");
 
-    // Initialize database tables
+    
     await initializeDatabase();
 
     console.log("\n=== Setup Complete ===");
@@ -19,5 +19,5 @@ async function setup_database() {
   }
 }
 
-// Call the setup function
+
 setup_database();

@@ -9,10 +9,10 @@ export interface DecryptionKeyRecord {
 
 export async function submitDecryptionRequest(key: string, userId: string) {
   try {
-    const timeout = 10 * 60 * 1000; // 10 minutes in milliseconds
+    const timeout = 10 * 60 * 1000; 
     const db = await connectToDB();
 
-    // pick one:
+    
     const ts = new Date(Date.now() + timeout).toISOString();
 
     if (db.driver === "postgres") {
@@ -27,13 +27,13 @@ export async function submitDecryptionRequest(key: string, userId: string) {
       );
     }
 
-    // Send to gRPC service
+    
     await new Promise((resolve, reject) => {
       grpcClient.SendDecryptionKey({ uid: userId, key: key }, (err: any, response: any) => {
         if (err) {
           console.error("gRPC SendDecryptionKey Error:", err);
-          // We might want to throw here if it's critical, or just log it.
-          // Given "submitDecryptionRequest", failure to send to the model worker might be critical.
+          
+          
           reject(err);
         } else {
           console.log("gRPC SendDecryptionKey Response:", response);

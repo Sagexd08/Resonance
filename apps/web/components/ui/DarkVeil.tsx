@@ -98,7 +98,7 @@ export default function DarkVeil({
         const canvas = ref.current;
         if (!canvas) return;
 
-        // Safety check for parent element
+        
         const parent = canvas.parentElement || document.body;
 
         const renderer = new Renderer({

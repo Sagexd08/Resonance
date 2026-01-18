@@ -8,12 +8,12 @@ export async function initializeDatabase(): Promise<void> {
   try {
     console.log("Initializing database with Prisma...");
 
-    // Test connection
+    
     await prisma.$connect();
     console.log("✓ Database connection established");
 
-    // Prisma will handle migrations via `prisma migrate dev` or `prisma db push`
-    // We just verify the connection here
+    
+    
     await prisma.$queryRaw`SELECT 1`;
     console.log("✓ Database schema verified");
 

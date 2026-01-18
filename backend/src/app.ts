@@ -19,12 +19,9 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 export const app = express();
 
-// Configure JSON parser with size limit
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Configure CORS with allowed origins from environment
-// Add React Native app origins (common ports: 8081, 19000, etc.)
 const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:8081,http://localhost:19000').split(',');
 app.use(cors({
   origin: allowedOrigins,

@@ -6,7 +6,7 @@ import Link from 'next/link';
 export const Footer = () => {
     return (
         <footer className="border-t border-white/5 bg-[#030308] pt-24 pb-12 relative overflow-hidden">
-            {/* Background Glow */}
+            {}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent blur-sm" />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">

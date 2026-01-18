@@ -35,7 +35,7 @@ export async function syncBiometrics(req: Request, res: Response): Promise<void>
     const audioFile = files?.["audioFile"]?.[0];
     const imageFile = files?.["imageFile"]?.[0];
 
-    // Validate inputs
+    
     if (!userId) {
       res.status(400).json({ error: "userId is required" });
       return;
@@ -46,7 +46,7 @@ export async function syncBiometrics(req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Verify user exists
+    
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -56,15 +56,15 @@ export async function syncBiometrics(req: Request, res: Response): Promise<void>
       return;
     }
 
-    // Analyze biometrics via ML service
+    
     const analysis = await analyzeBiometrics(audioFile.buffer, imageFile.buffer);
 
-    // Calculate FlowScore
+    
     const flowScore = calculateFlowScore(analysis.fatigue, analysis.stress);
 
-    // Save DailyMetric
+    
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of day
+    today.setHours(0, 0, 0, 0); 
 
     const dailyMetric = await prisma.dailyMetric.create({
       data: {
@@ -73,11 +73,11 @@ export async function syncBiometrics(req: Request, res: Response): Promise<void>
         flowScore,
         fatigueScore: analysis.fatigue,
         voiceStress: analysis.stress,
-        meetingCount: 0, // Can be updated separately
+        meetingCount: 0, 
       },
     });
 
-    // Generate coach message
+    
     const coachMessage = getCoachMessage(flowScore, analysis.fatigue, analysis.stress);
 
     res.json({

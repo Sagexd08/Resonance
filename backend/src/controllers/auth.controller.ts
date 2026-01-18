@@ -18,16 +18,16 @@ import {
 import type { user as userType } from "../types/auth.types.js";
 import { AuthRequest } from "../middlewares/auth.middleware.js";
 
-// LOGIN
+
 async function getLogin(req: Request, res: Response): Promise<void> {
   try {
-    // Validate request body exists
+    
     if (!req.body) {
       res.status(400).json({ error: "Request body is required" });
       return;
     }
 
-    // Support both email and legacy userId
+    
     const { email, password, userId, userPass } = req.body;
     const loginId = email || userId;
     const loginPass = password || userPass;
@@ -64,16 +64,16 @@ async function getLogin(req: Request, res: Response): Promise<void> {
   }
 }
 
-// REGISTER
+
 async function getRegister(req: Request, res: Response): Promise<void> {
   try {
-    // Validate request body exists
+    
     if (!req.body) {
       res.status(400).json({ error: "Request body is required" });
       return;
     }
 
-    // Support both email and legacy userId
+    
     const { email, password, role, teamId, userId, userPass } = req.body;
     const registerId = email || userId;
     const registerPass = password || userPass;
@@ -95,7 +95,7 @@ async function getRegister(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Generate tokens for the new user
+    
     const accessToken = generateAccessToken(user.uuid);
     const { token: refreshToken, expiresAt } = generateRefreshToken();
 
@@ -117,10 +117,10 @@ async function getRegister(req: Request, res: Response): Promise<void> {
   }
 }
 
-// REFRESH ACCESS TOKEN
+
 async function getRefresh(req: Request, res: Response): Promise<void> {
   try {
-    // Validate request body exists
+    
     if (!req.body) {
       res.status(400).json({ error: "Request body is required" });
       return;
@@ -156,7 +156,7 @@ async function getRefresh(req: Request, res: Response): Promise<void> {
   }
 }
 
-// LOGOUT
+
 async function getLogout(req: Request, res: Response): Promise<void> {
   try {
     const { refreshToken } = req.body;
@@ -175,7 +175,7 @@ async function getLogout(req: Request, res: Response): Promise<void> {
   }
 }
 
-// ME (uses auth middleware)
+
 async function getMe(req: AuthRequest, res: Response): Promise<void> {
   try {
     if (!req.user || !req.user.uuid) {

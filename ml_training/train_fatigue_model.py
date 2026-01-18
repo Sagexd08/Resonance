@@ -25,23 +25,23 @@ class DrowsinessDataset(Dataset):
         self.transform = transform
         self.samples = []
         
-        # Look for common directory structures
-        # Structure 1: alert/ and drowsy/ folders
+                                              
+                                                 
         alert_dir = self.data_dir / "alert"
         drowsy_dir = self.data_dir / "drowsy"
         
         if alert_dir.exists() and drowsy_dir.exists():
-            # Load from alert/drowsy folders
+                                            
             for img_path in alert_dir.glob("*.jpg"):
-                self.samples.append((str(img_path), 0))  # 0 = alert
+                self.samples.append((str(img_path), 0))             
             for img_path in alert_dir.glob("*.png"):
                 self.samples.append((str(img_path), 0))
             for img_path in drowsy_dir.glob("*.jpg"):
-                self.samples.append((str(img_path), 1))  # 1 = drowsy
+                self.samples.append((str(img_path), 1))              
             for img_path in drowsy_dir.glob("*.png"):
                 self.samples.append((str(img_path), 1))
         else:
-            # Try to find images in subdirectories
+                                                  
             for subdir in self.data_dir.iterdir():
                 if subdir.is_dir():
                     label = 1 if "drowsy" in subdir.name.lower() or "sleep" in subdir.name.lower() else 0
@@ -71,14 +71,14 @@ class DrowsinessDataset(Dataset):
 
 def create_model(num_classes=2):
     """Create ResNet model with transfer learning."""
-    # Load pre-trained ResNet18
+                               
     model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
     
-    # Freeze early layers
-    for param in list(model.parameters())[:-10]:  # Freeze all but last 10 layers
+                         
+    for param in list(model.parameters())[:-10]:                                 
         param.requires_grad = False
     
-    # Replace final layer
+                         
     num_features = model.fc.in_features
     model.fc = nn.Sequential(
         nn.Dropout(config.FATIGUE_CONFIG["dropout"]),
@@ -151,11 +151,11 @@ def main():
     print("Training Fatigue Detection Model (ResNet)")
     print("="*60)
     
-    # Setup
+           
     device = torch.device(config.DEVICE if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    # Data transforms
+                     
     train_transform = transforms.Compose([
         transforms.Resize(config.FATIGUE_CONFIG["input_size"]),
         transforms.RandomHorizontalFlip(),
@@ -171,27 +171,27 @@ def main():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    # Load dataset
+                  
     print(f"\nLoading dataset from {config.DROWSINESS_DATA_DIR}")
     full_dataset = DrowsinessDataset(config.DROWSINESS_DATA_DIR, transform=train_transform)
     
-    # Split dataset
+                   
     train_size = int(config.FATIGUE_CONFIG["train_split"] * len(full_dataset))
     val_size = len(full_dataset) - train_size
     train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
     
-    # Update validation transform
+                                 
     val_dataset.dataset.transform = val_transform
     
     train_loader = DataLoader(train_dataset, batch_size=config.FATIGUE_CONFIG["batch_size"], shuffle=True, num_workers=2)
     val_loader = DataLoader(val_dataset, batch_size=config.FATIGUE_CONFIG["batch_size"], shuffle=False, num_workers=2)
     
-    # Create model
+                  
     print("\nCreating ResNet model...")
     model = create_model(num_classes=config.FATIGUE_CONFIG["num_classes"])
     model = model.to(device)
     
-    # Loss and optimizer
+                        
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()),
@@ -199,7 +199,7 @@ def main():
         weight_decay=config.FATIGUE_CONFIG["weight_decay"]
     )
     
-    # Training loop
+                   
     best_val_loss = float('inf')
     patience_counter = 0
     
@@ -213,11 +213,11 @@ def main():
         print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%")
         print(f"Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.2f}%")
         
-        # Early stopping
+                        
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
-            # Save best model
+                             
             config.MODELS_DIR.mkdir(parents=True, exist_ok=True)
             torch.save(model.state_dict(), config.FATIGUE_MODEL_PATH)
             print(f"✓ Saved best model (val_loss: {val_loss:.4f})")
@@ -227,19 +227,19 @@ def main():
                 print(f"Early stopping triggered after {epoch+1} epochs")
                 break
     
-    # Final evaluation with metrics
+                                   
     print(f"\n{'='*60}")
     print("Final Evaluation on Validation Set")
     print(f"{'='*60}")
     
     val_loss, val_acc, val_preds, val_labels = validate(model, val_loader, criterion, device, return_predictions=True)
     
-    # Calculate F1 score
+                        
     f1 = f1_score(val_labels, val_preds, average='weighted')
     f1_macro = f1_score(val_labels, val_preds, average='macro')
     f1_per_class = f1_score(val_labels, val_preds, average=None)
     
-    # Confusion matrix
+                      
     cm = confusion_matrix(val_labels, val_preds)
     
     print(f"\nValidation Accuracy: {val_acc:.2f}%")
@@ -253,7 +253,7 @@ def main():
     print(f"\nConfusion Matrix:")
     print(cm)
     
-    # Save confusion matrix plot
+                                
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                 xticklabels=['Alert', 'Drowsy'],
@@ -265,7 +265,7 @@ def main():
     plt.savefig(cm_path)
     print(f"\nConfusion matrix saved to: {cm_path}")
     
-    # Classification report
+                           
     print(f"\nClassification Report:")
     print(classification_report(val_labels, val_preds, target_names=['Alert', 'Drowsy']))
     

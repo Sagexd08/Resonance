@@ -35,7 +35,7 @@ def main():
     print("Resonance ML Model Training Pipeline")
     print("="*60)
     
-    # Check if datasets are downloaded
+                                      
     from config import DROWSINESS_DATA_DIR, RAVDESS_DATA_DIR, BURNOUT_DATA_DIR
     
     datasets_ready = (
@@ -51,32 +51,32 @@ def main():
         if response.lower() != 'y':
             return
     
-    # Create models directory
+                             
     from config import MODELS_DIR
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
-    # Train models
+                  
     results = {}
     
-    # 1. Train Fatigue Model
+                            
     results['fatigue'] = run_training_script(
         'train_fatigue_model.py',
         'Fatigue Detection Model (ResNet)'
     )
     
-    # 2. Train Voice Model
+                          
     results['voice'] = run_training_script(
         'train_voice_model.py',
         'Voice Stress Detection Model (Wav2Vec2)'
     )
     
-    # 3. Train Burnout Model
+                            
     results['burnout'] = run_training_script(
         'train_burnout_model.py',
         'Burnout Prediction Model (XGBoost)'
     )
     
-    # Summary
+             
     print(f"\n{'='*60}")
     print("Training Summary")
     print(f"{'='*60}")

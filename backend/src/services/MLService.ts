@@ -31,7 +31,7 @@ export async function analyzeBiometrics(
   }
 
   try {
-    // Send audio to Lambda
+    
     const audioForm = new FormData();
     audioForm.append("file", audioBuffer, {
       filename: "voice.wav",
@@ -45,11 +45,11 @@ export async function analyzeBiometrics(
         headers: {
           ...audioForm.getHeaders(),
         },
-        timeout: 30000, // 30 second timeout
+        timeout: 30000, 
       }
     );
 
-    // Send image to Lambda
+    
     const imageForm = new FormData();
     imageForm.append("file", imageBuffer, {
       filename: "face.jpg",
@@ -63,7 +63,7 @@ export async function analyzeBiometrics(
         headers: {
           ...imageForm.getHeaders(),
         },
-        timeout: 30000, // 30 second timeout
+        timeout: 30000, 
       }
     );
 

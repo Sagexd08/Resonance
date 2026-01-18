@@ -17,7 +17,7 @@ from sklearn.metrics import f1_score, confusion_matrix, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# RAVDESS emotion mapping
+                         
 RAVDESS_EMOTIONS = {
     "01": "neutral",
     "02": "calm",
@@ -39,20 +39,20 @@ class RAVDESSDataset(Dataset):
         self.sample_rate = config.VOICE_CONFIG["sample_rate"]
         self.samples = []
         
-        # RAVDESS filename format: 03-01-01-01-01-01-01.wav
-        # Format: Modality-Vocal-Channel-Emotion-Intensity-Statement-Repetition-Actor
+                                                           
+                                                                                     
         for audio_file in self.data_dir.rglob("*.wav"):
             filename = audio_file.stem
             parts = filename.split("-")
             if len(parts) >= 4:
-                emotion_code = parts[2]  # Emotion is 3rd part
+                emotion_code = parts[2]                       
                 if emotion_code in RAVDESS_EMOTIONS:
                     emotion = RAVDESS_EMOTIONS[emotion_code]
                     emotion_idx = list(RAVDESS_EMOTIONS.keys()).index(emotion_code)
                     self.samples.append((str(audio_file), emotion_idx, emotion))
         
         if len(self.samples) == 0:
-            # Try alternative structure (Actor folders)
+                                                       
             for actor_dir in self.data_dir.iterdir():
                 if actor_dir.is_dir():
                     for audio_file in actor_dir.glob("*.wav"):
@@ -80,20 +80,20 @@ class RAVDESSDataset(Dataset):
     def __getitem__(self, idx):
         audio_path, emotion_idx, emotion = self.samples[idx]
         
-        # Load and preprocess audio
+                                   
         audio, sr = librosa.load(audio_path, sr=self.sample_rate, mono=True)
         
-        # Pad or truncate to max_length
+                                       
         max_samples = int(self.max_length * self.sample_rate)
         if len(audio) > max_samples:
             audio = audio[:max_samples]
         else:
             audio = np.pad(audio, (0, max_samples - len(audio)), mode='constant')
         
-        # Normalize
+                   
         audio = audio / np.max(np.abs(audio)) if np.max(np.abs(audio)) > 0 else audio
         
-        # Process with Wav2Vec2 processor
+                                         
         inputs = self.processor(audio, sampling_rate=self.sample_rate, return_tensors="pt", padding=True)
         
         return {
@@ -112,7 +112,7 @@ class Wav2Vec2Classifier(nn.Module):
     
     def forward(self, input_values):
         outputs = self.wav2vec2(input_values)
-        # Use mean pooling over sequence dimension
+                                                  
         pooled = outputs.last_hidden_state.mean(dim=1)
         pooled = self.dropout(pooled)
         logits = self.classifier(pooled)
@@ -122,7 +122,7 @@ def train_epoch(model, dataloader, criterion, optimizer, device, freeze_encoder=
     """Train for one epoch."""
     model.train()
     if freeze_encoder:
-        model.wav2vec2.eval()  # Freeze encoder
+        model.wav2vec2.eval()                  
     
     running_loss = 0.0
     correct = 0
@@ -185,15 +185,15 @@ def main():
     print("Training Voice Stress Detection Model (Wav2Vec2)")
     print("="*60)
     
-    # Setup
+           
     device = torch.device(config.DEVICE if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
-    # Load processor
+                    
     print(f"\nLoading Wav2Vec2 processor: {config.VOICE_CONFIG['model_name']}")
     processor = Wav2Vec2Processor.from_pretrained(config.VOICE_CONFIG["model_name"])
     
-    # Load dataset
+                  
     print(f"\nLoading dataset from {config.RAVDESS_DATA_DIR}")
     full_dataset = RAVDESSDataset(
         config.RAVDESS_DATA_DIR,
@@ -201,7 +201,7 @@ def main():
         max_length=config.VOICE_CONFIG["max_audio_length"]
     )
     
-    # Split dataset (RAVDESS typically has train/test splits, but we'll do 80/20)
+                                                                                 
     from torch.utils.data import random_split
     train_size = int(0.8 * len(full_dataset))
     val_size = len(full_dataset) - train_size
@@ -220,7 +220,7 @@ def main():
         num_workers=2
     )
     
-    # Create model
+                  
     print("\nCreating Wav2Vec2 model...")
     model = Wav2Vec2Classifier(
         config.VOICE_CONFIG["model_name"],
@@ -228,10 +228,10 @@ def main():
     )
     model = model.to(device)
     
-    # Loss and optimizer
+                        
     criterion = nn.CrossEntropyLoss()
     
-    # Phase 1: Freeze encoder, train classifier only
+                                                    
     print("\nPhase 1: Training classifier with frozen encoder...")
     optimizer = optim.AdamW(
         model.classifier.parameters(),
@@ -256,9 +256,9 @@ def main():
         else:
             patience_counter += 1
     
-    # Phase 2: Fine-tune encoder
+                                
     print("\nPhase 2: Fine-tuning encoder...")
-    # Unfreeze last 2 layers of encoder
+                                       
     for param in list(model.wav2vec2.encoder.layers[-2:].parameters()):
         param.requires_grad = True
     
@@ -268,7 +268,7 @@ def main():
             {"params": model.wav2vec2.encoder.layers[-2].parameters()},
             {"params": model.wav2vec2.encoder.layers[-1].parameters()},
         ],
-        lr=config.VOICE_CONFIG["learning_rate"] * 0.1,  # Lower LR for fine-tuning
+        lr=config.VOICE_CONFIG["learning_rate"] * 0.1,                            
         weight_decay=config.VOICE_CONFIG["weight_decay"]
     )
     
@@ -283,7 +283,7 @@ def main():
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             patience_counter = 0
-            # Save best model
+                             
             config.MODELS_DIR.mkdir(parents=True, exist_ok=True)
             torch.save(model.state_dict(), config.VOICE_MODEL_PATH)
             print(f"✓ Saved best model (val_loss: {val_loss:.4f})")
@@ -293,19 +293,19 @@ def main():
                 print(f"Early stopping triggered after {epoch+1} epochs")
                 break
     
-    # Final evaluation with metrics
+                                   
     print(f"\n{'='*60}")
     print("Final Evaluation on Validation Set")
     print(f"{'='*60}")
     
     val_loss, val_acc, val_preds, val_labels = validate(model, val_loader, criterion, device, return_predictions=True)
     
-    # Calculate F1 score
+                        
     f1 = f1_score(val_labels, val_preds, average='weighted')
     f1_macro = f1_score(val_labels, val_preds, average='macro')
     f1_per_class = f1_score(val_labels, val_preds, average=None)
     
-    # Confusion matrix
+                      
     cm = confusion_matrix(val_labels, val_preds)
     
     emotion_names = list(RAVDESS_EMOTIONS.values())
@@ -320,7 +320,7 @@ def main():
     print(f"\nConfusion Matrix:")
     print(cm)
     
-    # Save confusion matrix plot
+                                
     plt.figure(figsize=(12, 10))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                 xticklabels=emotion_names,
@@ -335,7 +335,7 @@ def main():
     plt.savefig(cm_path)
     print(f"\nConfusion matrix saved to: {cm_path}")
     
-    # Classification report
+                           
     print(f"\nClassification Report:")
     print(classification_report(val_labels, val_preds, target_names=emotion_names))
     

@@ -20,7 +20,6 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Get user's recent entries (last 30 days)
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -37,7 +36,7 @@ export async function GET(req: NextRequest) {
             take: 30,
         });
 
-        // Calculate personal metrics
+        
         const totalEntries = entries.length;
         const avgMood = entries.length > 0
             ? entries.reduce((sum, e) => sum + e.moodScore, 0) / entries.length
@@ -49,11 +48,10 @@ export async function GET(req: NextRequest) {
             ? entries.reduce((sum, e) => sum + e.stressScore, 0) / entries.length
             : 0;
 
-        // Burnout Risk Algorithm (from PRD)
-        // Risk = (AverageStress * 0.5) + (AverageExhaustion * 0.3) + (Volatility * 0.2)
-        const exhaustion = 10 - avgEnergy; // Invert energy to get exhaustion
+        
+        const exhaustion = 10 - avgEnergy;
 
-        // Calculate volatility (standard deviation of mood)
+        
         const moodMean = avgMood;
         const moodVariance = entries.length > 0
             ? entries.reduce((sum, e) => sum + Math.pow(e.moodScore - moodMean, 2), 0) / entries.length
@@ -63,7 +61,39 @@ export async function GET(req: NextRequest) {
         const burnoutRisk = (avgStress * 0.5) + (exhaustion * 0.3) + (volatility * 0.2);
         const burnoutPercentage = Math.min(100, (burnoutRisk / 10) * 100);
 
-        // Get team metrics if user is a manager
+        
+        const insights = [];
+        if (burnoutPercentage > 60) {
+            insights.push({
+                type: 'critical',
+                text: "High burnout risk detected. Shift into low-power mode and prioritize recovery.",
+                icon: 'ShieldAlert'
+            });
+        } else if (avgStress > 7) {
+            insights.push({
+                type: 'warning',
+                text: "Your stress load is elevated. Consider delegating high-intensity tasks today.",
+                icon: 'AlertCircle'
+            });
+        }
+
+        if (avgEnergy > 7) {
+            insights.push({
+                type: 'positive',
+                text: "Energy levels are optimal. Great time for deep-focus creative work.",
+                icon: 'Zap'
+            });
+        }
+
+        if (entries.length < 3) {
+            insights.push({
+                type: 'neutral',
+                text: "Keep checking in daily to sharpen your neural insights.",
+                icon: 'Sparkles'
+            });
+        }
+
+        
         let teamMetrics = null;
         if (user.role === 'MANAGER' || user.role === 'ADMIN') {
             const orgEntries = await prisma.emotionalEntry.findMany({
@@ -75,8 +105,17 @@ export async function GET(req: NextRequest) {
                         gte: thirtyDaysAgo,
                     },
                 },
+                orderBy: {
+                    timestamp: 'desc'
+                },
                 include: {
-                    user: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            role: true
+                        }
+                    },
                 },
             });
 
@@ -90,11 +129,19 @@ export async function GET(req: NextRequest) {
 
             const uniqueUsers = new Set(orgEntries.map(e => e.userId)).size;
 
+            
+            const recentActivity = orgEntries.slice(0, 5).map(e => ({
+                userId: e.userId.substring(0, 4), 
+                timestamp: e.timestamp,
+                mood: e.moodScore > 7 ? 'happy' : e.moodScore < 4 ? 'drained' : 'neutral'
+            }));
+
             teamMetrics = {
                 avgMood: teamAvgMood,
                 avgEnergy: teamAvgEnergy,
                 activeMembers: uniqueUsers,
                 totalCheckIns: orgEntries.length,
+                recentActivity
             };
         }
 
@@ -111,6 +158,9 @@ export async function GET(req: NextRequest) {
                     energy: e.energyScore,
                     stress: e.stressScore,
                 })),
+                insights: insights.length > 0 ? insights : [
+                    { type: 'neutral', text: "Resonance flow is stable. Continue your mindfulness practice.", icon: 'Activity' }
+                ]
             },
             team: teamMetrics,
         });

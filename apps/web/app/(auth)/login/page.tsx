@@ -34,10 +34,10 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a1a] via-[#1a1a3a] to-[#0f0f2a] relative overflow-hidden">
-            {/* Animated background grid */}
+            {}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(26,166,228,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(26,166,228,0.03)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
-            {/* Floating orbs */}
+            {}
             <motion.div
                 className="absolute top-20 left-20 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"
                 animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
@@ -59,7 +59,7 @@ export default function LoginPage() {
                     onSubmit={handleSubmit}
                     className="w-[400px] p-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl"
                 >
-                    {/* Logo */}
+                    {}
                     <div className="flex justify-center mb-6">
                         <motion.div
                             className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"

@@ -18,13 +18,13 @@ export class TeamResolver {
     ) {
         const orgId = req.user?.orgId;
 
-        // Get all users in the organization
+        
         const users = await this.prisma.user.findMany({
             where: { orgId },
             select: { id: true, name: true },
         });
 
-        // Get aggregated metrics per user for the period
+        
         const heatmapData = await Promise.all(
             users.map(async (user) => {
                 const entries = await this.prisma.emotionalEntry.findMany({
@@ -80,7 +80,7 @@ export class TeamResolver {
         });
 
         if (!metrics) {
-            // Calculate on the fly if not pre-computed
+            
             const entries = await this.prisma.emotionalEntry.findMany({
                 where: {
                     user: { orgId },
@@ -103,10 +103,10 @@ export class TeamResolver {
             const avgStress = entries.reduce((sum, e) => sum + e.stressScore, 0) / entries.length;
             const avgEnergy = entries.reduce((sum, e) => sum + e.energyScore, 0) / entries.length;
 
-            // Simple burnout calculation: high stress + low energy
+            
             const burnoutIndex = (avgStress / 100) * 50 + ((100 - avgEnergy) / 100) * 50;
 
-            // Simple engagement: inverse of burnout with mood factor
+            
             const engagementIndex = 100 - burnoutIndex * 0.5 + (avgMood / 5) * 25;
 
             return {
@@ -141,7 +141,7 @@ export class TeamResolver {
             orderBy: { timestamp: 'asc' },
         });
 
-        // Group by date
+        
         const dailyData: Record<string, { mood: number[]; energy: number[]; stress: number[] }> = {};
 
         entries.forEach((entry) => {
@@ -154,7 +154,7 @@ export class TeamResolver {
             dailyData[date].stress.push(entry.stressScore);
         });
 
-        // Calculate daily averages
+        
         const correlations = Object.entries(dailyData).map(([date, data]) => ({
             date,
             avgMood: data.mood.reduce((a, b) => a + b, 0) / data.mood.length,

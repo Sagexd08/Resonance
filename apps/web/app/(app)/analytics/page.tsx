@@ -1,9 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingDown, TrendingUp, Activity, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    LineChart, Line, AreaChart, Area, XAxis, YAxis,
+    CartesianGrid, Tooltip, ResponsiveContainer, Legend
+} from 'recharts';
+import {
+    TrendingDown, TrendingUp, Activity, AlertCircle,
+    ChevronLeft, Sparkles, Brain, Zap, ShieldAlert
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+
+import { Stack } from '../../../components/primitives/Stack';
+import { Text } from '../../../components/primitives/Text';
+import { GlassSurface } from '../../../components/primitives/GlassSurface';
+import { Button } from '../../../components/ui/Button';
+import {
+    containerReveal, itemReveal, fadeIn,
+    transitionMedium, floating
+} from '../../../lib/motion/transitions';
 
 interface AnalyticsData {
     personal: {
@@ -24,6 +41,7 @@ interface AnalyticsData {
 export default function AnalyticsPage() {
     const [data, setData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     useEffect(() => {
         fetchData();
@@ -43,20 +61,41 @@ export default function AnalyticsPage() {
     };
 
     if (loading) {
-        return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-    }
-
-    if (!data || data.personal.recentEntries.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <AlertCircle className="w-16 h-16 text-gray-600 mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Not Enough Data</h2>
-                <p className="text-gray-400">Complete more check-ins to see your analytics</p>
+            <div className="flex items-center justify-center min-h-screen bg-bg-primary">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                    <Brain className="w-8 h-8 text-accent-primary" />
+                </motion.div>
             </div>
         );
     }
 
-    // Transform data for charts
+    if (!data || data.personal.recentEntries.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-bg-primary text-center px-6">
+                <GlassSurface intensity="medium" className="p-12 max-w-lg">
+                    <Stack gap={6} align="center">
+                        <ShieldAlert className="w-16 h-16 text-text-tertiary" />
+                        <Stack gap={2}>
+                            <Text variant="h2">Insufficient Resonance</Text>
+                            <Text variant="body" className="text-text-secondary">
+                                We need more data to analyze your emotional frequency. Complete at least one check-in.
+                            </Text>
+                        </Stack>
+                        <Button
+                            variant="primary"
+                            size="lg"
+                            onClick={() => router.push('/check-in')}
+                        >
+                            Complete First Check-in
+                        </Button>
+                    </Stack>
+                </GlassSurface>
+            </div>
+        );
+    }
+
+    
     const chartData = data.personal.recentEntries
         .slice()
         .reverse()
@@ -68,182 +107,188 @@ export default function AnalyticsPage() {
             burnout: ((entry.stress * 0.5) + ((10 - entry.energy) * 0.3)) / 10 * 100,
         }));
 
-    const getBurnoutStatus = (risk: number) => {
-        if (risk < 30) return { label: 'Low Risk', color: 'text-green-400', icon: TrendingDown };
-        if (risk < 60) return { label: 'Moderate Risk', color: 'text-yellow-400', icon: Activity };
-        return { label: 'High Risk', color: 'text-red-400', icon: TrendingUp };
-    };
+    const riskLevel =
+        data.personal.burnoutRisk < 30 ? "low" :
+            data.personal.burnoutRisk < 60 ? "moderate" :
+                "high";
 
-    const burnoutStatus = getBurnoutStatus(data.personal.burnoutRisk);
-    const StatusIcon = burnoutStatus.icon;
-
-    return (
-        <div className="space-y-8">
-            <header>
-                <h1 className="text-4xl font-bold mb-2">Analytics</h1>
-                <p className="text-gray-400">Deep dive into your emotional wellness trends</p>
-            </header>
-
-            {/* Burnout Risk Card */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-8 rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-white/10"
-            >
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 className="text-2xl font-bold mb-2">Burnout Risk Score</h2>
-                        <p className="text-gray-400">Calculated using the PRD algorithm</p>
-                    </div>
-                    <div className={`flex items-center gap-2 ${burnoutStatus.color}`}>
-                        <StatusIcon className="w-6 h-6" />
-                        <span className="font-semibold">{burnoutStatus.label}</span>
-                    </div>
-                </div>
-
-                <div className="flex items-end gap-4">
-                    <div className={`text-7xl font-black ${burnoutStatus.color}`}>
-                        {data.personal.burnoutRisk}%
-                    </div>
-                    <div className="mb-4 text-gray-400">
-                        <p className="text-sm">Formula:</p>
-                        <p className="text-xs font-mono">(Stress × 0.5) + (Exhaustion × 0.3) + (Volatility × 0.2)</p>
-                    </div>
-                </div>
-
-                <div className="mt-6 p-4 rounded-xl bg-white/5">
-                    <p className="text-sm text-gray-300">
-                        {data.personal.burnoutRisk < 30 && "You're doing great! Keep maintaining healthy work-life balance."}
-                        {data.personal.burnoutRisk >= 30 && data.personal.burnoutRisk < 60 && "Consider taking breaks and managing stress levels."}
-                        {data.personal.burnoutRisk >= 60 && "⚠️ High burnout risk detected. Please prioritize self-care and consider speaking with your manager."}
-                    </p>
-                </div>
-            </motion.div>
-
-            {/* Mood Trends Chart */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="p-6 rounded-2xl bg-white/5 border border-white/10"
-            >
-                <h3 className="text-2xl font-bold mb-6">Mood, Energy & Stress Trends</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                        <XAxis dataKey="date" stroke="#888" />
-                        <YAxis stroke="#888" domain={[0, 10]} />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: '#1a1a2e',
-                                border: '1px solid #ffffff20',
-                                borderRadius: '12px',
-                            }}
-                        />
-                        <Legend />
-                        <Line type="monotone" dataKey="mood" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Mood" />
-                        <Line type="monotone" dataKey="energy" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} name="Energy" />
-                        <Line type="monotone" dataKey="stress" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} name="Stress" />
-                    </LineChart>
-                </ResponsiveContainer>
-            </motion.div>
-
-            {/* Burnout Risk Over Time */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="p-6 rounded-2xl bg-white/5 border border-white/10"
-            >
-                <h3 className="text-2xl font-bold mb-6">Burnout Risk Timeline</h3>
-                <ResponsiveContainer width="100%" height={250}>
-                    <AreaChart data={chartData}>
-                        <defs>
-                            <linearGradient id="burnoutGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                        <XAxis dataKey="date" stroke="#888" />
-                        <YAxis stroke="#888" domain={[0, 100]} />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: '#1a1a2e',
-                                border: '1px solid #ffffff20',
-                                borderRadius: '12px',
-                            }}
-                        />
-                        <Area
-                            type="monotone"
-                            dataKey="burnout"
-                            stroke="#ef4444"
-                            strokeWidth={2}
-                            fill="url(#burnoutGradient)"
-                            name="Burnout Risk %"
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
-            </motion.div>
-
-            {/* Insights Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <InsightCard
-                    title="Average Mood"
-                    value={data.personal.avgMood.toFixed(1)}
-                    max={10}
-                    trend={data.personal.avgMood > 6 ? 'up' : 'down'}
-                    color="blue"
-                />
-                <InsightCard
-                    title="Average Energy"
-                    value={data.personal.avgEnergy.toFixed(1)}
-                    max={10}
-                    trend={data.personal.avgEnergy > 6 ? 'up' : 'down'}
-                    color="green"
-                />
-                <InsightCard
-                    title="Average Stress"
-                    value={data.personal.avgStress.toFixed(1)}
-                    max={10}
-                    trend={data.personal.avgStress < 5 ? 'up' : 'down'}
-                    color="amber"
-                />
-            </div>
-        </div>
-    );
-}
-
-function InsightCard({ title, value, max, trend, color }: {
-    title: string;
-    value: string;
-    max: number;
-    trend: 'up' | 'down';
-    color: string;
-}) {
-    const percentage = (parseFloat(value) / max) * 100;
+    const riskConfig = {
+        low: { label: 'Optimal', color: '#10B981', gradient: 'happy', icon: TrendingDown },
+        moderate: { label: 'Moderate', color: '#F59E0B', gradient: 'energized', icon: Activity },
+        high: { label: 'Critical', color: '#EF4444', gradient: 'burnout', icon: TrendingUp },
+    }[riskLevel];
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="p-6 rounded-2xl bg-white/5 border border-white/10"
+            variants={containerReveal}
+            initial="initial"
+            animate="animate"
+            className="w-full max-w-7xl mx-auto p-6 md:p-12"
         >
-            <div className="flex items-center justify-between mb-4">
-                <h4 className="text-gray-400">{title}</h4>
-                {trend === 'up' ? (
-                    <TrendingUp className="w-5 h-5 text-green-400" />
-                ) : (
-                    <TrendingDown className="w-5 h-5 text-red-400" />
-                )}
-            </div>
-            <div className="text-4xl font-bold mb-3">{value}</div>
-            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                <div
-                    className={`h-full bg-${color}-500 transition-all duration-500`}
-                    style={{ width: `${percentage}%` }}
-                />
-            </div>
+            <Stack gap={10}>
+                {}
+                <motion.div variants={itemReveal}>
+                    <Stack gap={4}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<ChevronLeft className="w-4 h-4" />}
+                            onClick={() => router.push('/dashboard')}
+                        >
+                            Back to Pulse
+                        </Button>
+                        <Stack gap={1}>
+                            <Text variant="display" className="text-5xl">Neural <span className="text-accent-primary">Insights</span></Text>
+                            <Text variant="body-lg" className="text-text-secondary">Systemic analysis of your emotional wellness trajectory.</Text>
+                        </Stack>
+                    </Stack>
+                </motion.div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {}
+                    <motion.div variants={itemReveal} className="lg:col-span-2">
+                        <motion.div
+                            variants={floating}
+                            animate="animate"
+                        >
+                            <GlassSurface intensity="heavy" className="p-8 h-full relative group">
+                                <div className="absolute top-0 right-0 w-96 h-96 bg-accent-secondary/5 rounded-full blur-3xl -z-10" />
+
+                                <Stack gap={8}>
+                                    <Stack direction="row" justify="between" align="center">
+                                        <Text variant="h3">Vitality Trajectory</Text>
+                                        <riskConfig.icon className="w-6 h-6" style={{ color: riskConfig.color }} />
+                                    </Stack>
+
+                                    <div className="flex flex-col md:flex-row items-end gap-8">
+                                        <Stack gap={2}>
+                                            <Text variant="micro" className="text-text-tertiary">Current Risk Level</Text>
+                                            <Text variant="display" gradient={riskConfig.gradient as any} className="text-7xl leading-none">
+                                                {data.personal.burnoutRisk}%
+                                            </Text>
+                                            <Text variant="body" className="font-semibold" style={{ color: riskConfig.color }}>
+                                                {riskConfig.label} Risk Detected
+                                            </Text>
+                                        </Stack>
+
+                                        <GlassSurface intensity="light" className="p-4 flex-1">
+                                            <Stack gap={3}>
+                                                <Text variant="caption">AI Interpretation</Text>
+                                                <Text variant="body-sm" className="italic text-text-secondary leading-relaxed">
+                                                    "{data.personal.burnoutRisk < 30 ?
+                                                        "Systemic resonance is high. Your energy flow is optimized for peak performance." :
+                                                        data.personal.burnoutRisk < 60 ?
+                                                            "Minor fluctuations detected in your stress/exhaustion ratio. Consider a 15-minute mindfulness session." :
+                                                            "Critical delta between stress and recovery. High risk of burnout. Shift into low-power mode immediately."
+                                                    }"
+                                                </Text>
+                                            </Stack>
+                                        </GlassSurface>
+                                    </div>
+
+                                    {}
+                                    <GlassSurface intensity="light" className="p-6 h-[300px]">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={chartData}>
+                                                <defs>
+                                                    <linearGradient id="burnoutGradient" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={riskConfig.color} stopOpacity={0.3} />
+                                                        <stop offset="95%" stopColor={riskConfig.color} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <XAxis dataKey="date" hide />
+                                                <YAxis hide domain={[0, 100]} />
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}
+                                                />
+                                                <Area
+                                                    type="monotone"
+                                                    dataKey="burnout"
+                                                    stroke={riskConfig.color}
+                                                    strokeWidth={3}
+                                                    fillOpacity={1}
+                                                    fill="url(#burnoutGradient)"
+                                                    animationDuration={1500}
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </GlassSurface>
+                                </Stack>
+                            </GlassSurface>
+                        </motion.div>
+                    </motion.div>
+
+                    {}
+                    <motion.div variants={itemReveal}>
+                        <Stack gap={6}>
+                            <InsightCard
+                                icon={<Activity className="text-accent-primary" />}
+                                title="Average Mood"
+                                value={data.personal.avgMood.toFixed(1)}
+                                gradient="happy"
+                            />
+                            <InsightCard
+                                icon={<Zap className="text-emo-energized" />}
+                                title="Energy Flow"
+                                value={data.personal.avgEnergy.toFixed(1)}
+                                gradient="energized"
+                            />
+                            <InsightCard
+                                icon={<AlertCircle className="text-emo-burnout" />}
+                                title="Stress Load"
+                                value={data.personal.avgStress.toFixed(1)}
+                                gradient="burnout"
+                            />
+                        </Stack>
+                    </motion.div>
+                </div>
+
+                {}
+                <motion.div variants={itemReveal}>
+                    <GlassSurface intensity="medium" className="p-8">
+                        <Stack gap={6}>
+                            <Text variant="h3">Emotional Correlation</Text>
+                            <div className="h-[300px] w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={chartData}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-5)" vertical={false} />
+                                        <XAxis dataKey="date" stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="var(--text-tertiary)" fontSize={12} tickLine={false} axisLine={false} domain={[0, 10]} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-subtle)', borderRadius: '12px' }}
+                                        />
+                                        <Legend verticalAlign="top" height={36} />
+                                        <Line type="monotone" dataKey="mood" stroke="var(--emo-happy-base)" strokeWidth={3} dot={false} name="Mood" animationDuration={2000} />
+                                        <Line type="monotone" dataKey="energy" stroke="var(--emo-energized-base)" strokeWidth={3} dot={false} name="Energy" animationDuration={2000} />
+                                        <Line type="monotone" dataKey="stress" stroke="var(--emo-burnout-base)" strokeWidth={3} dot={false} name="Stress" animationDuration={2000} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </Stack>
+                    </GlassSurface>
+                </motion.div>
+            </Stack>
         </motion.div>
+    );
+}
+
+function InsightCard({ icon, title, value, gradient }: {
+    icon: React.ReactNode,
+    title: string,
+    value: string,
+    gradient: any
+}) {
+    return (
+        <GlassSurface intensity="light" className="p-6 hover:shadow-glow-soft hover:bg-white/5 transition-all">
+            <Stack gap={4}>
+                <div className="flex items-center gap-3">
+                    {icon}
+                    <Text variant="caption">{title}</Text>
+                </div>
+                <Text variant="h1" gradient={gradient} className="text-5xl font-black">
+                    {value}
+                </Text>
+            </Stack>
+        </GlassSurface>
     );
 }

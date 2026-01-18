@@ -1,23 +1,36 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Zap, Smile, Meh, Frown, CheckCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, Sparkles, Send, ArrowLeft, Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-const MOODS = [
-    { label: 'Energized', icon: Zap, color: 'text-amber-400', bg: 'bg-amber-400/20', border: 'border-amber-400/50' },
-    { label: 'Happy', icon: Smile, color: 'text-emerald-400', bg: 'bg-emerald-400/20', border: 'border-emerald-400/50' },
-    { label: 'Neutral', icon: Meh, color: 'text-blue-400', bg: 'bg-blue-400/20', border: 'border-blue-400/50' },
-    { label: 'Drained', icon: Frown, color: 'text-rose-400', bg: 'bg-rose-400/20', border: 'border-rose-400/50' },
-];
 
-export default function CheckInPage() {
-    const [selectedMood, setSelectedMood] = useState<string | null>(null);
+import { Stack } from '../../../components/primitives/Stack';
+import { Text } from '../../../components/primitives/Text';
+import { GlassSurface } from '../../../components/primitives/GlassSurface';
+import { Button } from '../../../components/ui/Button';
+import { MoodPicker, MoodType } from '../../../components/emotional/MoodPicker';
+import { fadeIn, transitionMedium, itemReveal, containerReveal } from '../../../lib/motion/transitions';
+
+function CheckInContent() {
+    const searchParams = useSearchParams();
+    const [selectedMood, setSelectedMood] = useState<MoodType | null>(null);
     const [note, setNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isComplete, setIsComplete] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        const moodParam = searchParams.get('mood');
+        if (moodParam) {
+            
+            const normalized = (moodParam.charAt(0).toUpperCase() + moodParam.slice(1)) as MoodType;
+            if (["Energized", "Happy", "Neutral", "Drained"].includes(normalized)) {
+                setSelectedMood(normalized);
+            }
+        }
+    }, [searchParams]);
 
     const handleSubmit = async () => {
         if (!selectedMood) return;
@@ -41,10 +54,10 @@ export default function CheckInPage() {
 
             setIsComplete(true);
 
-            // Redirect after delay
+            
             setTimeout(() => {
                 router.push('/dashboard');
-            }, 2000);
+            }, 2500);
         } catch (error) {
             console.error('Check-in error:', error);
             alert('Failed to save check-in. Please try again.');
@@ -55,77 +68,107 @@ export default function CheckInPage() {
 
     if (isComplete) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 min-h-[60vh] text-center">
+            <motion.div
+                variants={containerReveal}
+                initial="initial"
+                animate="animate"
+                className="flex flex-col items-center justify-center p-12 min-h-[60vh] text-center"
+            >
                 <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
+                    variants={itemReveal}
+                    className="w-24 h-24 rounded-full bg-emo-happy-muted flex items-center justify-center mb-6 shadow-glow-medium"
+                    style={{ '--glow-color': 'var(--emo-happy-glow)' } as any}
                 >
-                    <CheckCircle className="w-12 h-12 text-green-400" />
+                    <CheckCircle className="w-12 h-12 text-emo-happy" />
                 </motion.div>
-                <h2 className="text-3xl font-bold mb-4">Checked In!</h2>
-                <p className="text-gray-400">Your vibes have been recorded. See you on the dashboard.</p>
-            </div>
+                <motion.div variants={itemReveal}>
+                    <Text variant="display" gradient="happy" className="mb-4">Resonated.</Text>
+                    <Text variant="body-lg" className="text-text-secondary max-w-sm">
+                        Your vibes have been recorded. Recalibrating your dashboard...
+                    </Text>
+                </motion.div>
+            </motion.div>
         );
     }
 
     return (
-        <div className="max-w-2xl mx-auto py-12">
-            <header className="mb-12">
-                <h1 className="text-4xl font-bold mb-4">Daily Check-in</h1>
-                <p className="text-gray-400 text-lg">Take a moment to reflect. How are you feeling right now?</p>
-            </header>
-
-            <div className="space-y-8">
-                <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-4 uppercase tracking-wider">Select your mood</label>
-                    <div className="grid grid-cols-2 gap-4">
-                        {MOODS.map((mood) => {
-                            const Icon = mood.icon;
-                            const isSelected = selectedMood === mood.label;
-                            return (
-                                <button
-                                    key={mood.label}
-                                    onClick={() => setSelectedMood(mood.label)}
-                                    className={`
-                                        relative p-6 rounded-2xl border transition-all duration-200 flex flex-col items-center gap-3 overflow-hidden
-                                        ${isSelected ? `${mood.border} bg-white/10` : 'border-white/5 bg-white/5 hover:bg-white/10'}
-                                    `}
-                                >
-                                    <Icon className={`w-8 h-8 ${mood.color}`} />
-                                    <span className="font-medium">{mood.label}</span>
-                                    {isSelected && <div className={`absolute inset-0 opacity-20 ${mood.bg}`} />}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-4 uppercase tracking-wider">Anything on your mind? (Optional)</label>
-                    <textarea
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        placeholder="I'm feeling..."
-                        className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
-                    />
-                </div>
-
-                <div className="pt-4">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={!selectedMood || isSubmitting}
-                        className={`
-                            w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300
-                            ${!selectedMood
-                                ? 'bg-white/5 text-gray-500 cursor-not-allowed'
-                                : 'bg-white text-black hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-white/10'}
-                        `}
+        <motion.div
+            variants={containerReveal}
+            initial="initial"
+            animate="animate"
+            className="max-w-3xl mx-auto py-12 px-6"
+        >
+            <Stack gap={12}>
+                <motion.header variants={itemReveal}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        leftIcon={<ArrowLeft className="w-4 h-4" />}
+                        onClick={() => router.push('/dashboard')}
+                        className="mb-6"
                     >
-                        {isSubmitting ? 'Recording...' : 'Complete Check-in'}
-                    </button>
-                </div>
+                        Back to Pulse
+                    </Button>
+                    <Stack gap={2}>
+                        <Text variant="h1" className="text-text-primary">Emotional Deep Dive</Text>
+                        <Text variant="body-lg" className="text-text-secondary">
+                            Take a moment. How is your energy flowing today?
+                        </Text>
+                    </Stack>
+                </motion.header>
+
+                <Stack gap={8}>
+                    <motion.div variants={itemReveal}>
+                        <GlassSurface intensity="medium" className="p-1">
+                            <MoodPicker
+                                selected={selectedMood}
+                                onSelect={(mood) => setSelectedMood(mood)}
+                            />
+                        </GlassSurface>
+                    </motion.div>
+
+                    <motion.div variants={itemReveal}>
+                        <Stack gap={4}>
+                            <Stack direction="row" align="center" gap={2}>
+                                <Sparkles className="w-4 h-4 text-accent-secondary" />
+                                <Text variant="caption">Inner Dialogue (Optional)</Text>
+                            </Stack>
+                            <textarea
+                                value={note}
+                                onChange={(e) => setNote(e.target.value)}
+                                placeholder="What's contributing to this state?"
+                                className="w-full h-40 bg-surface-2 border border-surface-5 rounded-2xl p-6 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-accent-primary/50 focus:ring-1 focus:ring-accent-primary/30 transition-all resize-none font-body leading-relaxed"
+                            />
+                        </Stack>
+                    </motion.div>
+
+                    <motion.div variants={itemReveal}>
+                        <Button
+                            onClick={handleSubmit}
+                            disabled={!selectedMood || isSubmitting}
+                            variant={selectedMood ? "primary" : "secondary"}
+                            size="lg"
+                            className="w-full h-16 text-xl shadow-xl"
+                            isLoading={isSubmitting}
+                            rightIcon={!isSubmitting && <Send className="w-5 h-5" />}
+                        >
+                            {isSubmitting ? 'Syncing...' : 'Sync Resonance'}
+                        </Button>
+                    </motion.div>
+                </Stack>
+            </Stack>
+        </motion.div>
+    );
+}
+
+export default function CheckInPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+                <Loader2 className="w-8 h-8 animate-spin text-accent-primary" />
             </div>
-        </div>
+        }>
+            <CheckInContent />
+        </Suspense>
     );
 }

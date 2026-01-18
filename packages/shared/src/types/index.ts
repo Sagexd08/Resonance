@@ -1,4 +1,4 @@
-// packages/shared/src/types/index.ts
+
 export interface User {
     id: string;
     name: string;
@@ -17,9 +17,9 @@ export interface Organization {
 export interface EmotionalEntry {
     id: string;
     userId: string;
-    moodScore: number; // 1‑5
-    energyScore: number; // 0‑100
-    stressScore: number; // 0‑100
+    moodScore: number; 
+    energyScore: number; 
+    stressScore: number; 
     note?: string;
     timestamp: Date;
 }
@@ -29,7 +29,7 @@ export interface TeamMetrics {
     avgMood: number;
     burnoutIndex: number;
     engagementIndex: number;
-    period: string; // e.g. "2024-09"
+    period: string; 
 }
 
 export interface Alert {

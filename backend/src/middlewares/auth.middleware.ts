@@ -20,10 +20,10 @@ export const authMiddleware = (
 
     const token = authHeader.split(" ")[1];
 
-    // Verify and decode token (throws on failure)
+    
     const decoded = verifyAccessToken(token);
 
-    // Attach decoded user info to request
+    
     req.user = decoded;
 
     next();

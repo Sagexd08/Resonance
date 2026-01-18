@@ -4,7 +4,7 @@ import asyncio
 import sys
 import os
 
-# Add proto directory to path to import generated files
+                                                       
 sys.path.append(os.path.join(os.path.dirname(__file__), '../proto'))
 
 import interface_pb2
@@ -14,7 +14,7 @@ from storage import KeyStorage
 from request_queue import RequestQueue
 from model_loader import EmotionRecognitionModel
 
-# Resolve model path relative to this file so it works regardless of CWD
+                                                                        
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "model_v1.pth")
 
 class EmotionService(interface_pb2_grpc.EmotionServiceServicer):
@@ -44,18 +44,18 @@ class EmotionService(interface_pb2_grpc.EmotionServiceServicer):
             message="Image queued for processing"
         )
 
-    # Keeping original Predict for compatibility/testing
+                                                        
     async def Predict(self, request, context):
-        # This might need to be adapted or removed if strictly following the new flow
-        # For now, I'll leave it but it won't use the queue/decryption flow unless modified.
-        # Given the requirements, the new flow is SendDecryptionKey -> SendEncryptedImage.
+                                                                                     
+                                                                                            
+                                                                                          
         return interface_pb2.EmotionResponse(uid=request.uid, class_name="Deprecated: Use SendEncryptedImage")
 
 async def serve():
-    # Initialize components
+                           
     storage = KeyStorage()
     model = EmotionRecognitionModel(path=MODEL_PATH)
-    # We need to load the model. Since model.load is async, we do it here.
+                                                                          
     
     print("Loading model...")
     try:
@@ -67,7 +67,7 @@ async def serve():
 
     queue = RequestQueue(model, storage)
     
-    # Start queue worker
+                        
     worker_task = asyncio.create_task(queue.start_worker())
 
     server = grpc.aio.server()

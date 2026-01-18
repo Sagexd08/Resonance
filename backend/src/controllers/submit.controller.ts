@@ -21,7 +21,7 @@ export const getSubmit = async (
 
     const userId = req.user.uuid;
 
-    // Add job to queue with encrypted data and decryption key
+    
     await sendEncrytedData({
       userId,
       encryptedData

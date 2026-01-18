@@ -2,7 +2,7 @@ import express, { Request, Response, Router } from 'express';
 
 const router: Router = express.Router();
 
-// Types
+
 interface ChatMessage {
   id: string;
   studentId: string;
@@ -33,12 +33,12 @@ interface Counselor {
   maxChats: number;
 }
 
-// In-memory storage (replace with database in production)
+
 const chatMessages: Map<string, ChatMessage[]> = new Map();
 const counselorQueue: CounselorQueueEntry[] = [];
 const activeChatSessions: Map<string, { studentId: string; counselorId: string; startTime: Date }> = new Map();
 
-// Mock counselors data
+
 const counselors: Counselor[] = [
   {
     id: 'c1',
@@ -94,7 +94,7 @@ router.post('/request-counselor', (req: Request, res: Response): void => {
     return;
   }
 
-  // Check if student already in queue
+  
   const existingEntry = counselorQueue.find((e) => e.studentId === studentId);
   if (existingEntry) {
     res.json({
@@ -106,11 +106,11 @@ router.post('/request-counselor', (req: Request, res: Response): void => {
     return;
   }
 
-  // Find available counselor
+  
   const availableCounselor = counselors.find((c) => c.available && c.currentChats < c.maxChats);
 
   if (availableCounselor) {
-    // Assign counselor immediately
+    
     const sessionId = `session_${Date.now()}`;
     activeChatSessions.set(sessionId, {
       studentId,
@@ -134,7 +134,7 @@ router.post('/request-counselor', (req: Request, res: Response): void => {
     return;
   }
 
-  // Add to queue if no counselor available
+  
   const queueEntry: CounselorQueueEntry = {
     studentId,
     priority: priority as 'normal' | 'urgent',
@@ -143,7 +143,7 @@ router.post('/request-counselor', (req: Request, res: Response): void => {
     mood,
   };
 
-  // Urgent cases go to front
+  
   if (priority === 'urgent') {
     counselorQueue.unshift(queueEntry);
   } else {
@@ -185,7 +185,7 @@ router.post('/send', (req: Request, res: Response): void => {
     read: false,
   };
 
-  // Store message
+  
   const chatKey = `${studentId}_${counselorId || 'ai'}`;
   if (!chatMessages.has(chatKey)) {
     chatMessages.set(chatKey, []);
@@ -251,7 +251,7 @@ router.post('/end-session', (req: Request, res: Response): void => {
   if (sessionId) {
     const session = activeChatSessions.get(sessionId);
     if (session) {
-      // Free up the counselor
+      
       const counselor = counselors.find((c) => c.id === session.counselorId);
       if (counselor && counselor.currentChats > 0) {
         counselor.currentChats--;
@@ -260,7 +260,7 @@ router.post('/end-session', (req: Request, res: Response): void => {
     }
   }
 
-  // Remove from queue if present
+  
   const queueIndex = counselorQueue.findIndex((e) => e.studentId === studentId);
   if (queueIndex !== -1) {
     counselorQueue.splice(queueIndex, 1);

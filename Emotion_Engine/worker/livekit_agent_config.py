@@ -14,35 +14,35 @@ from livekit import agents, rtc
 from livekit.agents import AgentServer, AgentSession, Agent, room_io
 from livekit.plugins import google, silero
 
-# Load environment variables
+                            
 load_dotenv()
 load_dotenv(".env.local")
 
-# Configure logging
+                   
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# ============================================================================
-# ENVIRONMENT CONFIGURATION
-# ============================================================================
+                                                                              
+                           
+                                                                              
 
 LIVEKIT_URL = os.getenv('LIVEKIT_URL', 'wss://emotech-38dj94si.livekit.cloud')
 LIVEKIT_API_KEY = os.getenv('LIVEKIT_API_KEY', 'APISsXCJFjf8JW4')
 LIVEKIT_API_SECRET = os.getenv('LIVEKIT_API_SECRET', 'a4p9grtgakKGIqJqeMDGcSocsVVHeifYh53QMqzG00RA')
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', '')
 
-# Validate required configuration
+                                 
 if not GOOGLE_API_KEY:
     logger.warning(
         "GOOGLE_API_KEY not set. The agent will fail to connect to Gemini."
     )
 
-# ============================================================================
-# SYSTEM PROMPT - WELLNESS ASSISTANT
-# ============================================================================
+                                                                              
+                                    
+                                                                              
 
 SYSTEM_PROMPT = """You are a compassionate, empathetic wellness assistant designed to support 
 students with their mental health and emotional wellbeing.
@@ -111,9 +111,9 @@ Remember:
 """
 
 
-# ============================================================================
-# AGENT CLASS (v1.2+ API)
-# ============================================================================
+                                                                              
+                         
+                                                                              
 
 class WellnessAssistantAgent(Agent):
     """Wellness assistant agent class using the new v1.2+ API"""
@@ -122,7 +122,7 @@ class WellnessAssistantAgent(Agent):
         super().__init__(instructions=SYSTEM_PROMPT)
 
 
-# Create the agent server
+                         
 server = AgentServer()
 
 
@@ -134,17 +134,17 @@ async def wellness_agent(ctx: agents.JobContext):
     logger.info(f"  Room: {ctx.room.name}")
     
     try:
-        # Create an agent session with Gemini Realtime Model
+                                                            
         session = AgentSession(
             llm=google.beta.realtime.RealtimeModel(
                 model="gemini-2.0-flash-exp",
-                voice="Puck",  # Options: Puck, Charon, Kore, Fenrir, Aoide
+                voice="Puck",                                              
                 temperature=0.7,
             ),
-            vad=silero.VAD.load(),  # Voice Activity Detection
+            vad=silero.VAD.load(),                            
         )
         
-        # Start the session
+                           
         await session.start(
             room=ctx.room,
             agent=WellnessAssistantAgent(),
@@ -153,7 +153,7 @@ async def wellness_agent(ctx: agents.JobContext):
             ),
         )
         
-        # Generate an initial greeting
+                                      
         await session.generate_reply(
             instructions="Warmly greet the user and ask how they're feeling today. Be empathetic."
         )
@@ -165,15 +165,15 @@ async def wellness_agent(ctx: agents.JobContext):
         raise
 
 
-# ============================================================================
-# AGENT CONFIGURATION FOR DEPLOYMENT
-# ============================================================================
+                                                                              
+                                    
+                                                                              
 
-# This configuration is for the LiveKit agent framework v1.2+
-# When deployed, use the CLI commands:
-#   python livekit_agent_config.py dev      # Development mode
-#   python livekit_agent_config.py start    # Production mode
-#   python livekit_agent_config.py console  # Console mode (testing)
+                                                             
+                                      
+                                                              
+                                                             
+                                                                    
 
 DEPLOYMENT_NOTES = """
 # livekit-agent v1.2+ configuration
@@ -212,5 +212,5 @@ DEPLOYMENT_NOTES = """
 
 
 if __name__ == "__main__":
-    # Run the agent using the CLI
+                                 
     agents.cli.run_app(server)

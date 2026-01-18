@@ -64,7 +64,6 @@ export const Hero = () => {
                     <Link
                         href={session ? '/dashboard' : '/signup'}
                         className="group relative px-8 py-4 rounded-2xl bg-white text-black font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_40px_rgba(255,255,255,0.3)]"
-                        passHref
                     >
                         {/* @ts-ignore */}
                         {session ? 'Launch Dashboard' : 'Get Started Now'}
@@ -76,7 +75,6 @@ export const Hero = () => {
                     <Link
                         href="#demo"
                         className="group relative px-8 py-4 rounded-2xl glass text-white font-bold text-lg hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
-                        passHref
                     >
                         {/* @ts-ignore */}
                         <Play className="w-5 h-5 fill-current" />

@@ -6,7 +6,7 @@ from PIL import Image
 import librosa
 import io
 
-# ImageNet normalization stats
+                              
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406])
 IMAGENET_STD = np.array([0.229, 0.224, 0.225])
 
@@ -21,21 +21,21 @@ def preprocess_image(image_bytes: bytes, target_size=(224, 224)) -> np.ndarray:
     Returns:
         Preprocessed image array (1, 3, H, W) ready for ONNX inference
     """
-    # Load image
+                
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     
-    # Resize
+            
     image = image.resize(target_size, Image.Resampling.LANCZOS)
     
-    # Convert to numpy array and normalize to [0, 1]
+                                                    
     img_array = np.array(image, dtype=np.float32) / 255.0
     
-    # Normalize with ImageNet stats
+                                   
     img_array = (img_array - IMAGENET_MEAN) / IMAGENET_STD
     
-    # Convert to CHW format and add batch dimension
-    img_array = img_array.transpose(2, 0, 1)  # HWC -> CHW
-    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+                                                   
+    img_array = img_array.transpose(2, 0, 1)              
+    img_array = np.expand_dims(img_array, axis=0)                       
     
     return img_array.astype(np.float32)
 
@@ -51,17 +51,17 @@ def preprocess_audio(audio_bytes: bytes, sample_rate=16000, max_length=6.0) -> n
     Returns:
         Preprocessed audio array ready for Wav2Vec2
     """
-    # Load audio
+                
     audio, sr = librosa.load(io.BytesIO(audio_bytes), sr=sample_rate, mono=True)
     
-    # Pad or truncate to max_length
+                                   
     max_samples = int(max_length * sample_rate)
     if len(audio) > max_samples:
         audio = audio[:max_samples]
     else:
         audio = np.pad(audio, (0, max_samples - len(audio)), mode='constant')
     
-    # Normalize
+               
     if np.max(np.abs(audio)) > 0:
         audio = audio / np.max(np.abs(audio))
     
@@ -89,7 +89,7 @@ def emotion_to_stress_score(emotion_probs: np.ndarray, emotion_labels: list) -> 
         "surprised": 0.4,
     }
     
-    # Calculate weighted stress score
+                                     
     stress_score = 0.0
     for i, emotion in enumerate(emotion_labels):
         if emotion in emotion_to_stress:
