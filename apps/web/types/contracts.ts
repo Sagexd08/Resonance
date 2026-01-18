@@ -1,22 +1,17 @@
+// ============================================================================
+// RESONANCE DATA CONTRACTS
+// Type definitions for all data flowing through the system
+// ============================================================================
 
-
-
-
-
-
-
-
+// ============================================================================
+// CORE TYPES
+// ============================================================================
 
 export type MoodType = 'Energized' | 'Happy' | 'Neutral' | 'Drained';
 
 export type Role = 'EMPLOYEE' | 'MANAGER' | 'ADMIN';
 
-export type ISO8601 = string; 
-
-
-
-
-
+export type ISO8601 = string; // "2026-01-18T12:00:00Z"
 export interface User {
     id: string;
     email: string;
@@ -47,7 +42,7 @@ export interface Organization {
 }
 
 export interface OrgSettings {
-    anonymityThreshold: number; 
+    anonymityThreshold: number; // Min users before showing aggregates
     allowManagerInsights: boolean;
     requireCheckInNote: boolean;
 }
@@ -61,18 +56,18 @@ export interface Team {
     createdAt: ISO8601;
 }
 
-
-
-
+// ============================================================================
+// CHECK-IN & EMOTIONAL DATA
+// ============================================================================
 
 export interface CheckIn {
     id: string;
     userId: string;
     mood: MoodType;
-    moodScore: number; 
-    intensity: number; 
-    energyScore: number; 
-    stressScore: number; 
+    moodScore: number; // 1-10 derived from mood
+    intensity: number; // 1-10
+    energyScore: number; // 1-10
+    stressScore: number; // 1-10
     note?: string;
     isPrivate: boolean;
     createdAt: ISO8601;
@@ -96,17 +91,17 @@ export interface CheckInResponse {
     };
 }
 
-
-
-
+// ============================================================================
+// EMOTIONAL VECTORS (AI-COMPUTED)
+// ============================================================================
 
 export interface EmotionalVector {
     id: string;
     userId: string;
     checkinId: string;
-    sentimentScore: number; 
-    energyScore: number; 
-    stressScore: number; 
+    sentimentScore: number; // -1 to 1
+    energyScore: number; // 0 to 1
+    stressScore: number; // 0 to 1
     emotions: EmotionBreakdown;
     computedAt: ISO8601;
 }
@@ -119,14 +114,14 @@ export interface EmotionBreakdown {
     calm: number;
 }
 
-
-
-
+// ============================================================================
+// BURNOUT & STABILITY SCORES
+// ============================================================================
 
 export interface BurnoutScore {
     id: string;
     userId: string;
-    score: number; 
+    score: number; // 0-100
     stressComponent: number;
     exhaustionComponent: number;
     volatilityComponent: number;
@@ -139,16 +134,16 @@ export interface BurnoutScore {
 export interface StabilityScore {
     id: string;
     userId: string;
-    score: number; 
+    score: number; // 0-100 (higher = more stable)
     moodVariance: number;
     energyVariance: number;
     period: '7d' | '14d' | '30d';
     computedAt: ISO8601;
 }
 
-
-
-
+// ============================================================================
+// INSIGHTS (AI-GENERATED)
+// ============================================================================
 
 export type InsightType = 'reflection' | 'pattern' | 'suggestion' | 'celebration';
 
@@ -159,15 +154,15 @@ export interface Insight {
     type: InsightType;
     title: string;
     body: string;
-    confidence: number; 
+    confidence: number; // 0 to 1
     icon: string;
     isRead: boolean;
     createdAt: ISO8601;
 }
 
-
-
-
+// ============================================================================
+// TRENDS & ANALYTICS
+// ============================================================================
 
 export interface Trend {
     period: '7d' | '14d' | '30d';
@@ -192,9 +187,9 @@ export interface TimelineEntry {
     note?: string;
 }
 
-
-
-
+// ============================================================================
+// TEAM METRICS (AGGREGATED, ANONYMOUS)
+// ============================================================================
 
 export interface PulseSnapshot {
     teamId: string;
@@ -229,14 +224,14 @@ export interface MoodDistribution {
 }
 
 export interface TeamActivity {
-    userId: string; 
+    userId: string; // Anonymized
     timestamp: ISO8601;
     mood: 'happy' | 'neutral' | 'drained';
 }
 
-
-
-
+// ============================================================================
+// API RESPONSE CONTRACTS
+// ============================================================================
 
 export interface MetricsResponse {
     personal: {
@@ -291,9 +286,9 @@ export interface MemberStat {
     status: 'critical' | 'warning' | 'stable';
 }
 
-
-
-
+// ============================================================================
+// AI PIPELINE CONTRACTS
+// ============================================================================
 
 export interface SentimentInput {
     text: string;
@@ -304,8 +299,8 @@ export interface SentimentInput {
 }
 
 export interface SentimentOutput {
-    sentiment: number; 
-    confidence: number; 
+    sentiment: number; // -1 to 1
+    confidence: number; // 0 to 1
     emotions: EmotionBreakdown;
 }
 
@@ -316,7 +311,7 @@ export interface BurnoutInput {
 }
 
 export interface BurnoutOutput {
-    riskScore: number; 
+    riskScore: number; // 0-100
     components: {
         stressScore: number;
         exhaustionScore: number;
@@ -337,9 +332,9 @@ export interface InsightOutput {
     insights: Omit<Insight, 'id' | 'userId' | 'isRead' | 'createdAt'>[];
 }
 
-
-
-
+// ============================================================================
+// REALTIME CONTRACTS
+// ============================================================================
 
 export interface RealtimeCheckIn {
     event: 'checkin.created';
@@ -357,9 +352,9 @@ export interface RealtimePulseUpdate {
 
 export type RealtimeEvent = RealtimeCheckIn | RealtimePulseUpdate;
 
-
-
-
+// ============================================================================
+// FEATURE FLAGS
+// ============================================================================
 
 export interface FeatureFlag {
     key: string;

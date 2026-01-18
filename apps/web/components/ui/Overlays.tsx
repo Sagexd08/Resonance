@@ -11,11 +11,6 @@ import { GlassSurface } from '../primitives/GlassSurface';
 import { Button } from './Button';
 import { fadeIn, transitionMedium } from '../../lib/motion/transitions';
 
-
-
-
-
-
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -47,7 +42,7 @@ export function Modal({
 }: ModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
 
-    
+    // Handle ESC key
     useEffect(() => {
         if (!closeOnEsc || !isOpen) return;
 
@@ -59,7 +54,7 @@ export function Modal({
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [isOpen, closeOnEsc, onClose]);
 
-    
+    // Lock body scroll when open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -71,7 +66,7 @@ export function Modal({
         };
     }, [isOpen]);
 
-    
+    // Focus trap
     useEffect(() => {
         if (!isOpen || !modalRef.current) return;
 
@@ -109,7 +104,7 @@ export function Modal({
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {}
+                    {/* Overlay */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -120,7 +115,7 @@ export function Modal({
                         aria-hidden="true"
                     />
 
-                    {}
+                    {/* Modal */}
                     <motion.div
                         ref={modalRef}
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -138,7 +133,7 @@ export function Modal({
                         aria-describedby={description ? 'modal-description' : undefined}
                     >
                         <GlassSurface intensity="heavy" className="p-8 relative">
-                            {}
+                            {/* Close Button */}
                             <button
                                 onClick={onClose}
                                 className="absolute top-4 right-4 p-2 rounded-xl text-text-tertiary hover:text-text-primary hover:bg-surface-3 transition-all"
@@ -147,7 +142,7 @@ export function Modal({
                                 <X className="w-5 h-5" />
                             </button>
 
-                            {}
+                            {/* Header */}
                             {(title || description) && (
                                 <div className="mb-6 pr-8">
                                     {title && (
@@ -163,7 +158,7 @@ export function Modal({
                                 </div>
                             )}
 
-                            {}
+                            {/* Content */}
                             {children}
                         </GlassSurface>
                     </motion.div>
@@ -174,10 +169,10 @@ export function Modal({
     );
 }
 
-
-
-
-
+// ============================================================================
+// DRAWER COMPONENT
+// Slide-out panel for secondary content
+// ============================================================================
 
 interface DrawerProps {
     isOpen: boolean;
@@ -202,7 +197,7 @@ export function Drawer({
     size = 'md',
     children,
 }: DrawerProps) {
-    
+    // Lock body scroll when open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -223,7 +218,7 @@ export function Drawer({
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {}
+                    {/* Overlay */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -232,7 +227,7 @@ export function Drawer({
                         onClick={onClose}
                     />
 
-                    {}
+                    {/* Drawer */}
                     <motion.div
                         initial={slideFrom}
                         animate={slideTo}
@@ -248,7 +243,7 @@ export function Drawer({
                         aria-modal="true"
                     >
                         <div className="h-full flex flex-col">
-                            {}
+                            {/* Header */}
                             <div className="flex items-center justify-between p-6 border-b border-surface-5">
                                 {title && <Text variant="h4">{title}</Text>}
                                 <button
@@ -259,7 +254,7 @@ export function Drawer({
                                 </button>
                             </div>
 
-                            {}
+                            {/* Content */}
                             <div className="flex-1 overflow-y-auto p-6">
                                 {children}
                             </div>
@@ -272,10 +267,10 @@ export function Drawer({
     );
 }
 
-
-
-
-
+// ============================================================================
+// POPOVER COMPONENT
+// Floating content panel anchored to trigger
+// ============================================================================
 
 interface PopoverProps {
     trigger: ReactNode;
@@ -289,7 +284,7 @@ export function Popover({ trigger, children, side = 'bottom', align = 'center' }
     const triggerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    
+    // Close on outside click
     useEffect(() => {
         if (!isOpen) return;
 
@@ -350,10 +345,10 @@ export function Popover({ trigger, children, side = 'bottom', align = 'center' }
     );
 }
 
-
-
-
-
+// ============================================================================
+// SELECT COMPONENT
+// Custom styled dropdown select
+// ============================================================================
 
 interface SelectOption {
     value: string;
@@ -383,7 +378,7 @@ export function Select({
 
     const selectedOption = options.find(o => o.value === value);
 
-    
+    // Close on outside click
     useEffect(() => {
         if (!isOpen) return;
 
@@ -475,10 +470,10 @@ export function Select({
     );
 }
 
-
-
-
-
+// ============================================================================
+// TABS COMPONENT
+// Segmented content navigation
+// ============================================================================
 
 interface Tab {
     id: string;
@@ -505,7 +500,7 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
 
     return (
         <div className="w-full">
-            {}
+            {/* Tab List */}
             <div
                 role="tablist"
                 className="flex gap-1 p-1 rounded-xl bg-surface-2 border border-surface-5 mb-6"
@@ -531,7 +526,7 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
                 ))}
             </div>
 
-            {}
+            {/* Tab Panels */}
             <AnimatePresence mode="wait">
                 <motion.div
                     key={activeTab}
@@ -549,10 +544,10 @@ export function Tabs({ tabs, defaultTab, onChange }: TabsProps) {
     );
 }
 
-
-
-
-
+// ============================================================================
+// ACCORDION COMPONENT
+// Collapsible content sections
+// ============================================================================
 
 interface AccordionItem {
     id: string;
@@ -628,10 +623,10 @@ export function Accordion({ items, allowMultiple = false }: AccordionProps) {
     );
 }
 
-
-
-
-
+// ============================================================================
+// COMMAND PALETTE COMPONENT
+// Global command interface (Cmd+K)
+// ============================================================================
 
 interface CommandItem {
     id: string;
@@ -663,7 +658,7 @@ export function CommandPalette({
         cmd.label.toLowerCase().includes(search.toLowerCase())
     );
 
-    
+    // Group commands
     const groupedCommands = filteredCommands.reduce((acc, cmd) => {
         const group = cmd.group || 'Actions';
         if (!acc[group]) acc[group] = [];
@@ -671,7 +666,7 @@ export function CommandPalette({
         return acc;
     }, {} as Record<string, CommandItem[]>);
 
-    
+    // Keep track of flat list for keyboard navigation
     const flatList = Object.values(groupedCommands).flat();
 
     useEffect(() => {
@@ -727,7 +722,7 @@ export function CommandPalette({
                         onKeyDown={handleKeyDown}
                     >
                         <GlassSurface intensity="heavy" className="overflow-hidden">
-                            {}
+                            {/* Search Input */}
                             <div className="flex items-center gap-3 px-5 py-4 border-b border-surface-5">
                                 <Command className="w-5 h-5 text-text-tertiary shrink-0" />
                                 <input
@@ -746,7 +741,7 @@ export function CommandPalette({
                                 </kbd>
                             </div>
 
-                            {}
+                            {/* Results */}
                             <div className="max-h-80 overflow-y-auto p-2">
                                 {Object.entries(groupedCommands).map(([group, items]) => (
                                     <div key={group} className="mb-3">

@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-
 import { Stack } from '../../../components/primitives/Stack';
 import { Text } from '../../../components/primitives/Text';
 import { GlassSurface } from '../../../components/primitives/GlassSurface';
@@ -95,7 +94,7 @@ export default function AnalyticsPage() {
         );
     }
 
-    
+    // Transform data for charts
     const chartData = data.personal.recentEntries
         .slice()
         .reverse()
@@ -126,7 +125,7 @@ export default function AnalyticsPage() {
             className="w-full max-w-7xl mx-auto p-6 md:p-12"
         >
             <Stack gap={10}>
-                {}
+                {/* Header */}
                 <motion.div variants={itemReveal}>
                     <Stack gap={4}>
                         <Button
@@ -145,7 +144,7 @@ export default function AnalyticsPage() {
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {}
+                    {/* Burnout Analysis (Hero Section) */}
                     <motion.div variants={itemReveal} className="lg:col-span-2">
                         <motion.div
                             variants={floating}
@@ -186,7 +185,7 @@ export default function AnalyticsPage() {
                                         </GlassSurface>
                                     </div>
 
-                                    {}
+                                    {/* Timeline Chart */}
                                     <GlassSurface intensity="light" className="p-6 h-[300px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <AreaChart data={chartData}>
@@ -218,7 +217,7 @@ export default function AnalyticsPage() {
                         </motion.div>
                     </motion.div>
 
-                    {}
+                    {/* Stats Sidebar */}
                     <motion.div variants={itemReveal}>
                         <Stack gap={6}>
                             <InsightCard
@@ -243,7 +242,7 @@ export default function AnalyticsPage() {
                     </motion.div>
                 </div>
 
-                {}
+                {/* Secondary Chart Section */}
                 <motion.div variants={itemReveal}>
                     <GlassSurface intensity="medium" className="p-8">
                         <Stack gap={6}>

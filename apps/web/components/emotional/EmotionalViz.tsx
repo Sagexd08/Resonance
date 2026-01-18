@@ -142,6 +142,12 @@ export function StabilityGauge({
         return 'emo-drained';
     };
 
+    const stabilityTextClass = {
+        'emo-happy': 'text-emo-happy',
+        'emo-neutral': 'text-emo-neutral',
+        'emo-drained': 'text-emo-drained',
+    }[getStabilityColor()];
+
     return (
         <GlassSurface intensity="light" className={cn('p-4 overflow-hidden', sizeMap[size], className)}>
             <Stack gap={2} className="h-full">
@@ -185,7 +191,7 @@ export function StabilityGauge({
 
                 <Stack direction="row" justify="between" align="center">
                     <Text variant="body" className="font-semibold">{getStabilityLabel()}</Text>
-                    <Text variant="micro" className={`text-${getStabilityColor()}`}>{score}%</Text>
+                    <Text variant="micro" className={stabilityTextClass}>{score}%</Text>
                 </Stack>
             </Stack>
         </GlassSurface>
@@ -385,6 +391,24 @@ export function RiskIndicator({
         worsening: '↘️',
     };
 
+    const dotBgClass = {
+        'emo-happy': 'bg-emo-happy',
+        'emo-energized': 'bg-emo-energized',
+        'emo-burnout': 'bg-emo-burnout',
+    }[config.color];
+
+    const textColorClass = {
+        'emo-happy': 'text-emo-happy',
+        'emo-energized': 'text-emo-energized',
+        'emo-burnout': 'text-emo-burnout',
+    }[config.color];
+
+    const glowShadowClass = {
+        'emo-happy': 'shadow-[0_0_12px_var(--emo-happy-glow)]',
+        'emo-energized': 'shadow-[0_0_12px_var(--emo-energized-glow)]',
+        'emo-burnout': 'shadow-[0_0_12px_var(--emo-burnout-glow)]',
+    }[config.color];
+
     return (
         <GlassSurface intensity="light" className={cn('p-4', className)}>
             <Stack direction="row" gap={4} align="center">
@@ -400,8 +424,8 @@ export function RiskIndicator({
                     } : undefined}
                     className={cn(
                         'w-4 h-4 rounded-full',
-                        `bg-${config.color}`,
-                        config.animate && `shadow-[0_0_12px_var(--${config.color}-glow)]`
+                        dotBgClass,
+                        config.animate && glowShadowClass
                     )}
                 />
 
@@ -421,7 +445,7 @@ export function RiskIndicator({
 
                 {affectedPercentage !== undefined && (
                     <div className="text-right">
-                        <Text variant="h4" className={`text-${config.color}`}>
+                        <Text variant="h4" className={textColorClass}>
                             {affectedPercentage}%
                         </Text>
                         <Text variant="micro" className="text-text-tertiary">
@@ -538,22 +562,21 @@ const moodEmojis = {
     Drained: '😔',
 };
 
-const moodColors = {
-    Energized: 'emo-energized',
-    Happy: 'emo-happy',
-    Neutral: 'emo-neutral',
-    Drained: 'emo-drained',
-};
-
 export function EmotionPill({ mood, size = 'sm', showIcon = true, className }: EmotionPillProps) {
     const sizeClasses = size === 'sm' ? 'px-3 py-1 text-micro' : 'px-4 py-1.5 text-caption';
-    const color = moodColors[mood];
+
+    const moodClassName = {
+        Energized: 'bg-emo-energized-muted text-emo-energized border border-emo-energized/20',
+        Happy: 'bg-emo-happy-muted text-emo-happy border border-emo-happy/20',
+        Neutral: 'bg-emo-neutral-muted text-emo-neutral border border-emo-neutral/20',
+        Drained: 'bg-emo-drained-muted text-emo-drained border border-emo-drained/20',
+    }[mood];
 
     return (
         <span
             className={cn(
                 'inline-flex items-center gap-1.5 rounded-full font-medium',
-                `bg-${color}-muted text-${color} border border-${color}/20`,
+                moodClassName,
                 sizeClasses,
                 className
             )}

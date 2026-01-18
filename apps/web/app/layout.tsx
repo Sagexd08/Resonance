@@ -8,6 +8,11 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 export const metadata = {
     title: 'Resonance – Employee Wellness Platform',
     description: 'Daily emotional check-ins, team health dashboards, AI-powered recommendations.',
+    icons: {
+        icon: '/favicon.ico',
+        shortcut: '/favicon.ico',
+        apple: '/favicon.ico',
+    },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

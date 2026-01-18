@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/readmepic.jpeg" alt="Resonance Logo" width="400" />
+</p>
+
 # Resonance - Quick Start Guide
 
 ## 🚀 Getting Started
